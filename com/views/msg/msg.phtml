@@ -1,0 +1,39 @@
+<?php
+if (!isset($time)) {
+    $time = 2;/*两秒后跳转*/
+}
+if (empty($message)) {
+    $message = ' ';
+}
+
+if (empty($goUrl)) {
+    $goUrl = 'javascript:history.go(-1);';
+}
+?>
+<div class="main-content">
+    <div class="main-content-inner">
+        <div class="row">
+            <div style="width: 50%;margin-left:auto;margin-right:auto;margin-top:20px;">
+                <div class="widget-box">
+                    <div class="widget-header">
+                        <h4 class="smaller text-center">提示信息</h4>
+                    </div>
+                    <div class="widget-body">
+                        <div class="widget-main text-center">
+                            <div class="muted">
+                                <div style="font-size: 18px"><?php echo $message; ?></div>
+                                <a href='<?php echo $goUrl ?>'><?php echo $time; ?> 秒后跳转，如果浏览器没有反应，请点击此处...</a>
+                                <script type="text/javascript">
+                                    setTimeout(function () {
+                                        location.href = '<?php echo $goUrl;?>';
+                                    },<?php echo $time * 1000?>);
+                                </script>
+                            </div>
+                            <hr/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,81 @@
+<?php
+use Common\Tags\CommonTags;
+use Phalcon\Tag;
+?>
+<div class="page-content">
+    <div class="page-header" style="padding: 0;margin:0;">
+        <div id="search_box">
+            <div class="widget-box">
+                <div class="widget-body">
+                    <div class="widget-main" style="padding: 4px;min-height: 42px">
+                        <form id="searchForGrid" class="form-search form-inline" data-grid="grid-table">
+                        </form>
+                        <button type="button"
+                                title="添加角色"
+                                data-href="<?php echo $this->url->get('group/addRole') ?>?gid=<?=$gid?>&inDialog=1"
+                                class="btn btn-primary btn-sm pull-right"
+                                onclick="helper.dialogOpen(this)">
+                            <i class="ace-icon fa fa-trash-o bigger-120 "></i>
+                            添加角色
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div><!-- /.page-header -->
+    <div class="row">
+        <div class="col-xs-12">
+            <table id="grid-table" data-url="<?php echo $this->url->get('/group/role/'.$gid) ?>"></table>
+            <div id="grid-pager"></div>
+            <!-- PAGE CONTENT ENDS -->
+        </div><!-- /.col -->
+    </div><!-- /.row -->
+</div><!-- /.page-content -->
+<script>
+    var editUrl="<?=$this->url->get('/group/editRole')?>";
+    var delUrl="<?=$this->url->get('/group/delRole')?>";
+    dataGridHelper.show('grid-table', 'grid-pager',
+        ['ID', '名称', '识别码', '人数', '排序', '使用', '操作'],
+        [
+            {name: 'id', index: 'id', sortable: true},
+            {name: 'title', index: 'title', sortable: true},
+            {name: 'ic', index: 'ic', sortable: true},
+            {name: 'countuser', index: 'countuser', sortable: true},
+            {name: 'cls', index: 'cls', sortable: true},
+            {name: 'isuse', index: 'isuse', sortable: true},
+            {name: 'id', index: 'id', formatter:function (cellvalue, options, rowObject) {
+                var thisEditUrl=editUrl+'/'+cellvalue+"?inDialog=1";
+                var thisDelUrl=delUrl+'/'+cellvalue;
+                var editButton='<input ' +
+                    'type="button" ' +
+                    'value="编辑" ' +
+                    'onclick="helper.dialogOpen(this)" ' +
+                    'data-href="' + thisEditUrl + '" ' +
+                    'title="编辑" ' +
+                    'class="btn btn-primary btn-sm" /> ';
+                var delButton='<input ' +
+                    'type="button" ' +
+                    'value="删除" ' +
+                    'onclick="myChangeAction(this)" ' +
+                    'data-href="' + thisDelUrl + '" ' +
+                    'title="删除" ' +
+                    'class="btn btn-danger btn-sm" /> ';
+                return editButton+delButton;
+
+            }}
+
+        ]
+    );
+</script>
+
+<script>
+    function myChangeAction(obj)
+    {
+        helper.changeAction(obj,function () {
+            /*表格重载*/
+            dataGridHelper.gridSelectorAll['grid-table'].trigger("reloadGrid");
+        })
+        
+    }
+</script>

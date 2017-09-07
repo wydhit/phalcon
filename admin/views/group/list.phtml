@@ -1,0 +1,91 @@
+<?php
+use Common\Tags\CommonTags;
+use Phalcon\Tag;
+?>
+<div class="page-content">
+    <div class="page-header" style="padding: 0;margin:0;">
+        <div id="search_box">
+            <div class="widget-box">
+                <div class="widget-body">
+                    <div class="widget-main" style="padding: 4px;min-height: 42px">
+                        <form id="searchForGrid" class="form-search form-inline" data-grid="grid-table">
+                        </form>
+                        <button type="button"
+                                title="添加用户组"
+                                data-href="<?php echo $this->url->get('group/add') ?>"
+                                class="btn btn-primary btn-sm pull-right"
+                                onclick="helper.dialogOpen(this)">
+                            <i class="ace-icon fa fa-trash-o bigger-120 "></i>
+                            添加用户组
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div><!-- /.page-header -->
+    <div class="row">
+        <div class="col-xs-12">
+            <table id="grid-table" data-url="<?php echo $this->url->get('/group/list') ?>"></table>
+            <div id="grid-pager"></div>
+            <!-- PAGE CONTENT ENDS -->
+        </div><!-- /.col -->
+    </div><!-- /.row -->
+</div><!-- /.page-content -->
+<script>
+    var editUrl="<?=$this->url->get('/group/edit')?>";
+    var delUrl="<?=$this->url->get('/group/del')?>";
+    var roleUrl="<?=$this->url->get('/group/role')?>";
+    dataGridHelper.show('grid-table', 'grid-pager',
+        ['ID', '名称', '识别码', '角色数', '人数', '排序', '使用', '操作'],
+        [
+            {name: 'id', index: 'id', sortable: true},
+            {name: 'title', index: 'title', sortable: true},
+            {name: 'ic', index: 'ic', sortable: true},
+            {name: 'countson', index: 'countson', sortable: true},
+            {name: 'countuser', index: 'countuser', sortable: true},
+            {name: 'cls', index: 'cls', sortable: true},
+            {name: 'isuse', index: 'isuse', sortable: true},
+            {name: 'id', index: 'id', formatter:function (cellvalue, options, rowObject) {
+                var thisEditUrl=editUrl+'/'+cellvalue+"?inDialog=1";
+                var thisDelUrl=delUrl+'/'+cellvalue;
+                var thisRoleUrl=roleUrl+'/'+cellvalue;
+                var editButton='<input ' +
+                    'type="button" ' +
+                    'value="编辑" ' +
+                    'onclick="helper.dialogOpen(this)" ' +
+                    'data-href="' + thisEditUrl + '" ' +
+                    'title="编辑" ' +
+                    'class="btn btn-primary btn-sm" /> ';
+                var addButton='<input ' +
+                    'type="button" ' +
+                    'value="角色" ' +
+                    'onclick="helper.goUrl(this)" ' +
+                    'data-href="' + thisRoleUrl + '" ' +
+                    'title="角色" ' +
+                    'class="btn btn-yellow btn-sm" /> ';
+                var delButton='<input ' +
+                    'type="button" ' +
+                    'value="删除" ' +
+                    'onclick="myChangeAction(this)" ' +
+                    'data-href="' + thisDelUrl + '" ' +
+                    'title="删除" ' +
+                    'class="btn btn-danger btn-sm" /> ';
+                return editButton+addButton+delButton;
+
+            }}
+
+        ]
+    );
+</script>
+
+<script>
+    function myChangeAction(obj)
+    {
+        helper.changeAction(obj,function () {
+            /*表格重载*/
+            dataGridHelper.gridSelectorAll['grid-table'].trigger("reloadGrid");
+        })
+        
+    }
+</script>

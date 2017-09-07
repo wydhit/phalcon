@@ -1,0 +1,72 @@
+<div id="accordion" class="accordion-style1 panel-group">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">
+                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+                    <i class="ace-icon fa fa-angle-down bigger-110" data-icon-hide="ace-icon fa fa-angle-down"
+                       data-icon-show="ace-icon fa fa-angle-right"></i>
+                  更新模型
+                </a>
+            </h4>
+        </div>
+        <div class="panel-collapse collapse in" id="collapseOne">
+            <div class="panel-body">
+                <button type="button"
+                        title="更新全部模型"
+                        data-href="<?=\Common\Helpers\HttpHelper::url('data/createModel')?>"
+                        class="btn btn-purple btn-sm "
+                        onclick="helper.dialogOpen(this)">
+                    <i class="ace-icon fa fa-trash-o bigger-120 "></i>
+                    更新全部模型
+                </button>
+                <button type="button"
+                        title="更新全部模型"
+                        data-href="<?=\Common\Helpers\HttpHelper::url('data/updateField')?>"
+                        class="btn btn-danger btn-sm "
+                        onclick="helper.dialogOpen(this)">
+                    <i class="ace-icon fa fa-trash-o bigger-120 "></i>
+                    更新全部模型字段
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">
+                <a class="accordion-toggle collapsed" data-toggle="collapse" data-parent="#accordion"
+                   href="#collapseTwo">
+                    <i class="ace-icon fa fa-angle-right bigger-110" data-icon-hide="ace-icon fa fa-angle-down"
+                       data-icon-show="ace-icon fa fa-angle-right"></i>
+                    其他
+                </a>
+            </h4>
+        </div>
+
+        <div class="panel-collapse collapse" id="collapseTwo">
+            <div class="panel-body">
+              其他
+            </div>
+        </div>
+    </div>
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">
+                <a class="accordion-toggle collapsed" data-toggle="collapse" data-parent="#accordion"
+                   href="#collapseThree">
+                    <i class="ace-icon fa fa-angle-right bigger-110" data-icon-hide="ace-icon fa fa-angle-down"
+                       data-icon-show="ace-icon fa fa-angle-right"></i>
+                    其他
+                </a>
+            </h4>
+        </div>
+
+        <div class="panel-collapse collapse" id="collapseThree">
+            <div class="panel-body">
+              其他
+            </div>
+        </div>
+    </div>
+</div>

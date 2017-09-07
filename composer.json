@@ -1,0 +1,15 @@
+{
+    "name": "ejshendeng",
+    "authors": [
+        {
+            "name": "ejshendeng",
+            "email": "ejshendeng@qq.com"
+        }
+    ],
+    "require-dev": {
+        "snowair/phalcon-debugbar": "^1.2",
+        "phalcon/ide-stubs": "*"
+    },
+    "require": {
+    }
+}

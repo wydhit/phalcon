@@ -1,0 +1,29 @@
+一个空项目模板
+需要修改一下内容
+public/index.php 修改成项目名称
+config/config.php 里面的配置
+Bootstrap.php 修改第一行的名称空间
+
+或者运行 php createProject.php projectName
+
+多模块用法 在项目config目录下加 modules.php 配置多模块
+return [
+    'user' => [
+        'className' => 'Admin\Modules\User\Module',
+        'path' => PROJECT_PATH . '/modules/user/Module.php',
+        'namespace'=>'Admin\Modules\User\Controllers'
+    ],
+    'order'=>function($di){
+       $di->set('a','a');
+      $di->get('loader')->registerNamespace([]);
+    }
+];
+项目下建文件夹 modules 存放模块
+
+控制器分层用法  在项目config目录下加 dir_controller.php 配置控制分层
+/*控制器分层配置*/
+return [
+    'finance',
+    'user',
+    'access'
+];

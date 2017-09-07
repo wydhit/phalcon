@@ -1,0 +1,186 @@
+不同的子域名分配不同的项目
+底下分若干有关系的子项目 如 admin www api
+每个子项目启用不同的子域名 admin.a.com  www.a.com api.a.com
+每一个子项目可以是单模块 也可以是多模块  也可以多层控制器
+除了共用基层方法和配置文件外 每个项目保持很大的独立性
+
+###关于配置
+1、公共配置 /common/config 目录下
+    config.php 公共配置 所有子项目都有可能用到的 比如数据库配置
+    local.config.php //本地配置文件 使用git忽略，不提交版本库。 每个开发者需要自己临时配置配置信息时应该在这个文件修改 local.config.php
+        不存在时 复制一份config.php进行修改即可
+    /common/config 目录下 还有
+    loader.php 自动加载器
+    debugger_config.php debugger配置信息 仅仅在debug模式下并且开启debugger下起作用
+    dir_controller.php  控制器分层配置示例文件
+    modules.php         多模块配置示例文件
+    router.php          特殊路由配置示例文件
+2、项目配置
+    项目/config 目录下
+    基本和公共配置一样
+    目录下还有
+    config_cache.php 系统自动生成的配置缓存文件 修改系统配置时请删除该文件
+    dir_controller.php  控制器分配置文件 common/config下有示例文件
+    modules.php 需要多模块这里配置模块 common/config下有示例文件
+    router.php 每个项目路由不一样单独路由文件 common/config下有示例文件
+
+###路径 不带最后一个/
+
+
+
+### 模块名 多层控制器目录  基本控制器名 不能重复 匹配url优先 模块名  其次  多层控制器目录  最后  基本控制器名
+
+###请求
+    1、提交数据用post 返回json数据  请求html页面用get 返回html数据
+    2、普通web请求用 get 返回html数据  一般情况下禁止web post请求
+    3、判断是否该返回json 请求体里  Accept === 'application/json';
+
+###交互信息处理
+    信息格式:
+    {
+        'status':'sucess|error string',
+        'msg':'XXXXX  string ',
+        'data':'前端需要的数据 array ',
+        'errinput':'字段错误提示信息 ：array'
+        'goUrl':'下一步需要执行跳转的url：string',
+        'code':630
+    }
+    1、ajax请求
+    2、普通web请求
+
+    1.1 2处理方式  输出错误信息模板   公共方法   msg('err')
+    1.2 输出json 数据          sendJson(status)
+###信息输出
+    ##解析模板输出   return $this->render();$this->actionRender();  控制器分层需要指定控制名称
+    ##json数据输出 return $this->sendJson() 还有两个方便的封装方法
+
+###异常及错误日志
+    1、错误的处理
+        php7 致命错误转为异常 转为异常处理
+        其它错误:
+        开发环境 所有错误都转为异常
+        正式环境 错误不转为异常 不显示  但是记录错误
+    2、异常处理
+       程序终止执行
+       业务逻辑需要终止执行的时候也通过抛出异常处理 LogicException
+       异常处理交由控制器的doExceptionAction方法处理
+
+#### 数据使用规范
+一般数据储存在mysql 数据库共用
+表名 字段名 全部小写用下划线分割
+主键统一使用id  外键 表名_id
+尽量不要允许NULL
+布尔类型的值均以 is、has、exist 或者 can开头
+固定长度的字符串用char不用varchar
+常用规范
+  id ，无符号int
+  1、时间:int
+  time：unix时间戳   start_time：开始时间  end_time 结束时间  create_time 数据创建时间  update_time  数据更新时间
+  delete_time 删除时间....
+  2、状态之类的枚举 tinyint(1)
+   status:状态
+   type:类型
+   用数字表示约定的几种状态 1:新建 2:更新  3:完成 （尽量不要使用0，必须写注释）
+   这类型的字段同时用常量些写进model中  const STATUS=[1=>'新建',2=>'更新',3=>'完成']
+  3.title：标题 名称   name：姓名    content:内容
+    img：图片   pre_img 预览图   big_img 大图  small_img 小图
+    keywords：关键词   description：描述
+    remark,other:备注   list_order,cls:排序(越大越靠前)   pid:上级id  ip：ip地址
+  4.isdel 是否删除 默认0代表正常数据  1代表已被删除
+  5.is_***   是否可用等等
+逻辑规范:
+   1、控制器中尽量避免直接操作模型 尽量通过 Service 或者 Search操作
+   2、仅仅是查找数据列表展示 直接在 Service 或者 Search $this->modelsManager->createBuilder()创建查询并返回array
+   3、涉及到插入 更新 删除数据的操作 尽量使用orm 相关方法写入model中 需要连表数据或者连表操作时 使用模型关联， 一定不用join
+   4、Model::find  Model::findFirst
+        尽可用于很简单的条件查询  不允许使用join 和  columns
+        需要使用这时俩一般应该用$this->modelsManager->createBuilder()
+   4、一个方法放在 Service 还是Model    不使用orm的方法尽量不要放在model中 应放在 Service 或者 Search 使用orm 且内容不是很多的放在Model
+   5、Service 或者 Search
+        Service 一般用于业务逻辑处理  如产生订单 处理支付
+        Search 一般用于获取列表形式的信息展示用 主要处理搜索条件
+        Service::instance() 或者 Search::instance() 可以直接获取实例 内部通过容器实例化类
+        这俩都继承于Injectable 可以方便的获取容器里的服务 如 $this->db $this->modelsManager $this->session
+数据层
+    $this->db   db层面没有查询构造器 除了insert update delete有简单封装外查询需要手写select
+    基础方法 execute (执行insert update delete等不返回数据的操作)  query (返回数据结果集 后续需要fetch 实际执行pdo结果集类中的fetchAll)
+    插入:insertAsDict insert 对execute等封装
+    修改:updateAsDict update 对execute等封装
+    删除：delete             对execute等封装
+    字段自增值 increment 对updateAsDict等封装
+    字段自减值 decrement 对updateAsDict等封装
+    fetchAll() 对query等封装（实际也是对pdo结果集的操作）
+    fetchOne() 对query等封装（实际也是对pdo结果集的操作）
+    自行封装increment  decrement  decrementAboveZero 方法
+PHQL
+    PHQL依赖Model  实际是Model层的操作了
+    Query 最底层执行phql方法
+    new Query($PHQL)->execute();结果集合
+    new Query($PHQL)->getSingleResult()一条结果
+        执行结果
+            select查询
+            根据columns 给出 Complex 结果集或者 Simple 结果集
+                Complex
+                Simple 只select不完整的字段 集合中每一个元素为Row 否则为完整的Model 对象
+    或者通过模型管理器 createQuery 方法获取Query  模型管理器仅提供new Query 后续还需要execute()
+    模型管理器也提供了 executeQuery 直接给出结果不需要execute()
+    Query\\Builder
+        Query的构造器 最终通过getQuery()获取自动生成的Query实例
+Model层
+    Criteria是find()里的参数构造器  通过Model::query()获取 一般情况下不推荐使用Model::query() 这个效率要慢些
+    find() 实际还是用模型管理器中  $this->modelsManager->createBuilder() 获取Query再去执行的
+PHQL和Model::find  简单的查询条件使用 Model::find 一般用于查找一条数据并修改   复杂的使用PHQL
+
+###session 缓存 log
+session采用redis   键值：项目名:session:sessionId  如 admin:session:sessionId
+不必要的缓存采用redis  键值： 项目名:cache:缓存id  如： admin:cache:缓存id
+不必要的数据 储存在mongo或者文本文件    需要统计分析的mongo  偶尔需要查看的文本文件
+###日志：
+    异常及错误日志
+    操作日志
+    核心业务日志
+log 储存在mongo或者文本文件    需要统计分析的mongo  偶尔需要查看的文本文件
+
+
+####ace 规范
+    button 模板
+    <button type="button" submit 提交
+            title="添加商品"
+            data-href="<?php echo $this->url->get('goods/add') ?>"
+            class="btn btn-purple btn-sm pull-right"
+            onclick="helper.dialogOpen(this)">
+            <i class="ace-icon fa fa-trash-o bigger-120 "></i>
+        添加商品
+    </button>
+    或者用input  type=button
+    颜色规范  相临的两个按钮颜色尽量不要一样
+    添加按钮 btn-primary
+    删除按钮 btn-danger 备用 btn-pink
+    编辑按钮 btn-purple
+    管理按钮 btn-success
+    提交按钮 btn-info
+    重置按钮 默认
+    搜索按钮 btn-primary
+    导出按钮 btn-purple
+    其他按钮
+    btn-warning
+    btn-inverse
+    btn-yellow
+    btn-grey
+    btn-light
+
+
+    异常处理 phalcon 系统产生异常，执行控制之前产生异常  控制器中产生异常，视图产生异常
+
+
+    处理参数  1、request 验证参数    2、model  初始化model
+    控制器
+####验证
+    控制器输入验证
+    模型插入验证
+
+    有时候两者是通用的验证规则
+
+
+
+
