@@ -9,11 +9,10 @@ namespace Common\Core;
  */
 use Common\Exception\ErrorException;
 use Common\Exception\LogicException;
+use Common\Helpers\ConfigHelper;
 use Common\Helpers\DiHelper;
 use Common\Helpers\HttpHelper;
-use Phalcon\Debug;
 use Phalcon\Http\Request;
-use Phalcon\Http\Response;
 use Phalcon\Logger;
 use Phalcon\Version;
 
@@ -31,7 +30,7 @@ class ExceptionHandler
         if ($request !== null && is_object($request)) {
             $this->request = $request;
         } else {
-            $this->request = DiHelper::getDi()->get('request');
+            $this->request = DiHelper::getRequest();
         }
     }
 
@@ -43,19 +42,10 @@ class ExceptionHandler
         register_shutdown_function([$this, 'handleFatalError']);
         return $this;
     }
-
-    /*处理错误*/
-    public function handleError($code, $message, $file = '', $line = 0)
-    {
-        if (error_reporting() & $code) {
-            throw  new ErrorException($message, $code, $code, $file, $line);
-        }
-    }
-
     /*处理异常*/
     public function handleException($exception)
     {
-        DiHelper::getDi()->get('response')->setStatusCode(200);
+        DiHelper::getResponse()->setStatusCode(200);
         $this->unregister();
         try {
             $this->logException($exception);//记录异常
@@ -66,14 +56,19 @@ class ExceptionHandler
             $this->handleFallbackExceptionMessage($e, $exception);
         }
     }
-
+    /*处理错误*/
+    public function handleError($code, $message, $file = '', $line = 0)
+    {
+        if (error_reporting() & $code) {
+            throw  new ErrorException($message, $code, $code, $file, $line);
+        }
+    }
     public function handleFatalError()
     {
-
         $error = error_get_last();
         if ($error && ErrorException::isFatalError($error)) {
             $exception = new ErrorException($error['message'], $error['type'], $error['type'], $error['file'], $error['line']);
-            DiHelper::getDi()->get('response')->setStatusCode(200);
+            DiHelper::getResponse()->setStatusCode(200);
             $this->handleException($exception);
         }
     }
@@ -86,8 +81,7 @@ class ExceptionHandler
     {
         /*用户自定义特殊类型的异常 一般为业务逻辑异常  怎么处理有异常本身决定*/
         if ($exception instanceof LogicException && method_exists($exception, 'doException')) {
-            $exception->doException();
-            return;
+            return $exception->doException();
         }
         /*通用异常处理 */
         if ($this->isDebug()) {/*开发模式*/
@@ -96,10 +90,11 @@ class ExceptionHandler
             $message = '服务异常 code:' . $exception->getCode();
         }
         if ($this->isReturnJson()) {
-            HttpHelper::returnJson(['status' => 'error', 'message' => $message]);
+            HttpHelper::sendJson(['status' => 'error', 'message' => $message]);
         } else {
-            HttpHelper::returnMessage(['status' => 'error', 'message' => $message]);
+            HttpHelper::sendMessage(['status' => 'error', 'message' => $message]);
         }
+        return true;
     }
 
     /**
@@ -149,7 +144,7 @@ class ExceptionHandler
                 $outMessage = '处理异常发生错误！';
             }
             if ($this->isReturnJson()) {
-                HttpHelper::returnJson([
+                HttpHelper::sendJson([
                     'status' => 'error',
                     'message' => $outMessage
                 ]);
@@ -159,36 +154,14 @@ class ExceptionHandler
         }
     }
 
-
-    public function getVersion()
-    {
-        return "<div class='version'>Phalcon Framework " . Version::get() . "</div>";
-    }
-
     /**
      * 是否调试模式下运行  在调试模式下 将暴露更多错误信息
      * @return bool
      */
     private function isDebug()
     {
-        if ($this->debug === null) {
-            return defined('APP_DEBUG') && APP_DEBUG === true;
-        } else {
-            return $this->debug;
-        }
+        return ConfigHelper::isDebug();
     }
-
-    /**
-     * @param $isDebug bool
-     */
-    public function setDebug($isDebug = null)
-    {
-        if ($isDebug === null) {
-            $isDebug = false;
-        }
-        $this->debug = $isDebug;
-    }
-
     /**
      * Exception转成字符串的错误信息
      * @param $exception \Exception

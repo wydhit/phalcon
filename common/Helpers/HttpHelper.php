@@ -9,7 +9,9 @@
 namespace Common\Helpers;
 
 use Common\Core\ReturnData;
+use Phalcon\Di;
 use Phalcon\Exception;
+use Phalcon\Http\Request;
 use Phalcon\Http\Response;
 use Phalcon\Mvc\Url;
 use Phalcon\Mvc\View;
@@ -24,7 +26,7 @@ class HttpHelper
      */
     public static function isInDialog()
     {
-        if (DiHelper::getDi()->get('request')->get('inDialog')) {
+        if (DiHelper::getRequest()->get('inDialog')) {
             return true;
         } else {
             return false;
@@ -37,31 +39,26 @@ class HttpHelper
      */
     public static function isReturnJson()
     {
-        $request = DiHelper::getDi()->get('request');
-        return $request->getBestAccept() === 'application/json';
+        return DiHelper::getRequest()->getBestAccept() === 'application/json';
     }
 
     /**
      * 控制器之外输出json
      * @param $data
      */
-    public static function returnJson($data)
+    public static function sendJson($data)
     {
         self::registerEvent();
         $returnData = new ReturnData();
         $returnData->assign($data);
-        $di = DiHelper::getDi();
-        $di->get('response')
-            ->setHeader('Content-type', 'application/json')
-            ->setJsonContent($returnData->getReturnData())
-            ->send();
+        DiHelper::getResponse()->setJsonContent($returnData->getReturnData())->send();
     }
 
-    public static function returnMessage($data, $viewPath = 'msg', $viewFile = 'msg')
+    public static function sendMessage($data, $viewPath = 'msg', $viewFile = 'msg')
     {
         self::registerEvent();
         $di = DiHelper::getDi();
-        if (!$di->has('view')) {/*已经注册视图系统*/
+        if (!$di->has('view')) {/*还没注册视图系统*/
             $di->setShared('view', function () {
                 return new View();
             });
@@ -76,7 +73,7 @@ class HttpHelper
          */
         $view = $di->get('view');
         $view->reset()->finish();/*清理掉之前的所有输出*/
-        $view->setViewsDir(self::getViewsDir());
+        $view->setViewsDir(self::getViewsDir($viewPath, $viewFile));
         $view->registerEngines(['.phtml' => 'Phalcon\Mvc\View\Engine\Php']);
         $view->setVar('title', $title);
         $view->setRenderLevel(View::LEVEL_ACTION_VIEW);
@@ -85,11 +82,10 @@ class HttpHelper
         /**
          * @var $response Response
          */
-        $response=$di->get('response');
-        if(!$response->isSent()){
+        $response = $di->get('response');
+        if (!$response->isSent()) {
             $response->setContent($html)->send();
         }
-
     }
 
     /**
@@ -128,8 +124,7 @@ class HttpHelper
     public static function registerEvent()
     {
         $di = DiHelper::getDi();
-        if (defined('APP_DEBUG') && APP_DEBUG && $di->has('config') && $di->get('config')->get('Debugbar', false)) {
-            echo "Asfasdfas";
+        if (ConfigHelper::isDebug() && ConfigHelper::get('Debugbar', false)) {
             $di->get('eventManager')->fire("application:beforeSendResponse", $di['app'], $di['response']);
         }
     }
@@ -164,15 +159,103 @@ class HttpHelper
 
     }
 
-    public static function getViewsDir()
+    public static function getViewsDir($viewPath = 'msg', $viewFile = 'msg')
     {
-        $di = DiHelper::getDi();
-        if($di->has('config')){
-            return $di->get('config')->path('application.viewsDir');
-        }else{
-            return COMMON_PATH.'/views';
+        $appViewsDir = ConfigHelper::get('application.viewsDir');
+        if (!empty($appViewsDir) && file_exists($appViewsDir . '/' . $viewPath . '/' . $viewFile . 'phtml')) {
+            return $appViewsDir;
+        } else {
+            return COMMON_PATH . '/views';
         }
-        
     }
-    
+
+    public static function getIp()
+    {
+        if (isset($_SERVER)) {
+            if (isset($_SERVER["HTTP_X_FORWARDED_FOR"])) {
+                $IP = $_SERVER["HTTP_X_FORWARDED_FOR"];
+            } else if (isset($_SERVER["HTTP_CLIENT_IP"])) {
+                $IP = $_SERVER["HTTP_CLIENT_IP"];
+            } else {
+                $IP = $_SERVER["REMOTE_ADDR"];
+            }
+        } else {
+            if (getenv("HTTP_X_FORWARDED_FOR")) {
+                $IP = getenv("HTTP_X_FORWARDED_FOR");
+            } else if (getenv("HTTP_CLIENT_IP")) {
+                $IP = getenv("HTTP_CLIENT_IP");
+            } else {
+                $IP = getenv("REMOTE_ADDR");
+            }
+        }
+        return $IP;
+    }
+
+    public static function currentUrl()
+    {
+        $request = DiHelper::getRequest();
+        return 'http://' . $request->getHttpHost() . $request->getURI();
+    }
+
+    public static function preImgHtml($preimg = '', $width = '', $height = '', $alt = '', $style = '')
+    {
+        $preimgUri = ConfigHelper::get('preimgUri');
+        $preimg = trim($preimgUri, '/') . '/' . trim($preimg, '/');
+        return Tag::image([
+            $preimg,
+            'alt' => $alt,
+            'width' => $width,
+            'height' => $height,
+            'style' => $style,
+        ]);
+    }
+
+    public static function page($recordTotal = 0, $pageNum = 20, $pageKey = 'page')
+    {
+        $page = DiHelper::getRequest()->get($pageKey, 'int', 1);
+        $pageTotal = ceil($recordTotal / $pageNum);
+        $firstUrl = self::pageUrl(1, $pageKey);
+        $str = " <li class=\"paginate_button previous\"><a href=\"$firstUrl\">首页</a></li>";
+        if ($page > 1) {
+            $url = self::pageUrl($page - 1, $pageKey);
+            $str .= "<li class=\"paginate_button previous\"><a href=\"$url\">上一页</a></li>";
+        }
+
+        for ($i = ($page - 5); $i < $page; $i++) {
+            if ($i >= 1) {
+                $url = self::pageUrl($i, $pageKey);
+                $str .= "<li  class='paginate_button'><a href='$url'>$i</a></li>";
+            }
+        }
+        for ($i = $page; $i < ($page + 5); $i++) {
+            if ($i <= $pageTotal && $i >= 1) {
+                if ($i == $page) {
+                    $active_class = 'active';
+                } else {
+                    $active_class = '';
+                }
+                $url = self::pageUrl($i, $pageKey);
+                $str .= "<li  class='paginate_button $active_class'><a href='$url'>$i</a></li>";
+            }
+        }
+        if (($page + 1) <= $pageTotal) {
+            $url = self::pageUrl($page + 1, $pageKey);
+            $str .= " <li class=\"paginate_button next\"><a href=\"$url\">下一页</a></li>";
+        }
+        $url = self::pageUrl($pageTotal, $pageKey);
+        $str .= "<li class=\"paginate_button previous\"><a href=\"$url\">尾页</a></li>";
+        return $str;
+    }
+
+    public static function pageUrl($page, $pageKey = 'page')
+    {
+        $baseUrl = explode('?', self::currentUrl())[0];
+        $query = DiHelper::getRequest()->getQuery();
+        unset($query['_url']);
+        $query[$pageKey] = $page;
+        return $baseUrl . "?" . http_build_query($query);
+
+
+    }
+
 }

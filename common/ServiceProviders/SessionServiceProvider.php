@@ -8,6 +8,8 @@
 
 namespace Common\ServiceProviders;
 
+use Common\Helpers\Config;
+use Common\Helpers\ConfigHelper;
 use \Phalcon\DiInterface;
 use Phalcon\Session\Adapter\Files as SessionAdapter;
 
@@ -15,8 +17,9 @@ class SessionServiceProvider extends ServiceProvider
 {
     public function register(DiInterface $di)
     {
-        $sessionName = $di->get('config')->get('application')->get('sessionName', 'mcSessionId');
-        $di->setShared('session', function () use ($sessionName) {
+
+        $di->setShared('session', function () {
+            $sessionName =ConfigHelper::get('application.sessionName','mcSessionId');
             $session = new SessionAdapter();
             $session->setName($sessionName);
             $session->start();

@@ -9,6 +9,8 @@
 namespace Common\ServiceProviders;
 
 
+use Common\Helpers\Config;
+use Common\Helpers\ConfigHelper;
 use Phalcon\DiInterface;
 use Phalcon\Cache\Frontend\Data;
 use Phalcon\Cache\Backend\File;
@@ -17,10 +19,10 @@ class CacheServiceProvider extends ServiceProvider
 {
     public function register(DiInterface $di)
     {
-        $config = $di->get('config');
-        $di->setShared('cache', function () use ($config) {
+
+        $di->setShared('cache', function () {
             $frontCache = new Data(['lifetime' => '172800']);
-            $cacheDir = $config->get('application')->cacheDir;
+            $cacheDir = ConfigHelper::get('application.cacheDir');
             $cache = new File($frontCache, ['cacheDir' => $cacheDir]);
             return $cache;
         });

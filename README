@@ -140,8 +140,6 @@ session采用redis   键值：项目名:session:sessionId  如 admin:session:ses
     操作日志
     核心业务日志
 log 储存在mongo或者文本文件    需要统计分析的mongo  偶尔需要查看的文本文件
-
-
 ####ace 规范
     button 模板
     <button type="button" submit 提交
@@ -171,16 +169,57 @@ log 储存在mongo或者文本文件    需要统计分析的mongo  偶尔需要
 
 
     异常处理 phalcon 系统产生异常，执行控制之前产生异常  控制器中产生异常，视图产生异常
-
-
     处理参数  1、request 验证参数    2、model  初始化model
     控制器
 ####验证
     控制器输入验证
     模型插入验证
-
     有时候两者是通用的验证规则
+#### 过滤
+    string
+    email
+    int
+    float
+    alphanum
+    striptags
+    trim
+    lower
+    url
+    upper
+    $price = $this->request->getPost('price', 'double');
 
+### 控制器内层次划分
+    输入数据验证层 Validation
+                           对输入的get post 进行数据输入验证 同时根据事先确定好的验证规则可以生产js验证规则
+                           一般应对输入量较多的场景如商品信息的输入，一般推荐将验证器放在当前controller的Validator目录下
+                           输入量较少如生产订单只需要商品id及数量 可不用验证器
+                           所有验证规则都可以加cancelOnFail选项 当前验证失败不再验证接下来的其他验证规则
+                           所有验证规则都可以加allowEmpty选项 空值是不验证
+
+                           常用验证器:
+                           Phalcon\Validation\Validator\Alnum  数字或者字母  0 '' null 都通过
+                           Phalcon\Validation\Validator\Alpha  字母   null '' 通过 0 ' ' '0'不通过
+                           Phalcon\Validation\Validator\Digit  数字 int 有最大限制 '2134123412342134' 字符串数字没有限制 不能有小数点一般针对字符串内的数字
+                           Phalcon\Validation\Validator\Numericality  数字  可以是小数 "2.30"
+                           Phalcon\Validation\Validator\Date   日期验证 默认格式 2017-2-12  特殊格式 format 选项 不能有空格
+                                                               也可以验证带时间的格式 format=>'Y-m-d H:i:s' 2017-2-12 02:03:23
+                           Phalcon\Validation\Validator\PresenceOf 不能为空  null 或者 '' 不能通过
+                           Phalcon\Validation\Validator\Email      Email 格式
+                           Phalcon\Validation\Validator\ExclusionIn  必须在某个范围内  domain=>['a','b']
+                           Phalcon\Validation\Validator\InclusionIn  不能在某个范围内  domain=>['a','b']
+                           Phalcon\Validation\Validator\StringLength 字符串长度 "max"=> 50,"min"=> 2,  汉字算一个字符
+                           Phalcon\Validation\Validator\Between      数字在两个值之间  "minimum" => 0, "maximum" => 100, 也可以验证小数
+                           Phalcon\Validation\Validator\Confirmation  两个值必须相等 一般用于确认密码  "with"=> "confirmPassword"
+                           Phalcon\Validation\Validator\Callback    自定义函数验证 "callback"=>function($data){}
+                           不常用验证器:
+                           Phalcon\Validation\Validator\Url      url 验证
+                           Phalcon\Validation\Validator\Regex 自定义规则验证  pattern=>'' 定义规则
+                           Phalcon\Validation\Validator\Identical 等于某个值
+                           Phalcon\Validation\Validator\File  文件验证
+                           Phalcon\Validation\Validator\Uniqueness  唯一验证  不推荐使用
+    业务逻辑层 Service   1、牵扯到多模型 2、业务逻辑稍微复杂 4、和具体模型无关的业务处理 5、公用性强的
+    搜索数据处理层 Search  搜索条件及需要数据复杂故单独列出处理 1、用于列表展示的数据
+    数据处理层 Model  针对某个模型单一的处理 一般在controller里不推荐直接使用Model 除非很简单删除更新的操作
 
 
 

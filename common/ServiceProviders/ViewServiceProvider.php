@@ -8,16 +8,16 @@
 
 namespace Common\ServiceProviders;
 
+use Common\Helpers\ConfigHelper;
 use Phalcon\Mvc\View;
 
 class ViewServiceProvider extends ServiceProvider
 {
     public function register(\Phalcon\DiInterface $di)
     {
-        $config = $di->get('config');
-        $di->setShared('view', function () use ($config) {
+        $di->setShared('view', function () {
             $view = new View();
-            $view->setViewsDir($config->get('application')->get('viewsDir'));
+            $view->setViewsDir(ConfigHelper::get('application.viewsDir'));
             $view->registerEngines(['.phtml' => 'Phalcon\Mvc\View\Engine\Php']);
             return $view;
         });

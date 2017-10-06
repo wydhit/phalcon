@@ -10,7 +10,11 @@
  */
 namespace Common\Traits;
 
-
+/**
+ * @deprecated
+ * Trait ErrMsg
+ * @package Common\Traits
+ */
 trait ErrMsg
 {
     /*需要返回的业务信息 一般为错误信息*/

@@ -1,6 +1,5 @@
 <?php
 namespace Bizer\Controllers;
-use Bizer\Controllers\BizerController;
 
 class IndexController extends BizerController
 {

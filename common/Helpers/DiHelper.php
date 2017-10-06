@@ -11,6 +11,8 @@ namespace Common\Helpers;
 use Phalcon\Di;
 use Phalcon\Di\FactoryDefault;
 use Phalcon\DiInterface;
+use Phalcon\Http\Request;
+use Phalcon\Http\Response;
 
 class DiHelper
 {
@@ -23,10 +25,30 @@ class DiHelper
         return $di;
     }
 
+    public static function get($name)
+    {
+        return self::getDi()->get($name);
+    }
+
+    /**
+     * @return Request
+     */
+    public static function getRequest()
+    {
+        return self::get('request');
+    }
+    /**
+     * @return Response
+     */
+    public static function getResponse()
+    {
+        return self::get('response');
+    }
+
     public static function getDirFromNameSpace($className = '', $allNameSpace = null)
     {
-        if(empty($allNameSpace)){
-            $allNameSpace=self::getDi()->get('loader')->getNamespaces();
+        if (empty($allNameSpace)) {
+            $allNameSpace = self::getDi()->get('loader')->getNamespaces();
         }
         $ds = DIRECTORY_SEPARATOR;
         $ns = "\\";
@@ -43,7 +65,7 @@ class DiHelper
                 $fixedDirectory = rtrim($directory, $ds) . $ds;
                 $filePath = $fixedDirectory . $fileName . ".php";
                 if ($filePath) {
-                   return  dirname($filePath);
+                    return dirname($filePath);
                 }
             }
         }

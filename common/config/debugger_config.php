@@ -1,5 +1,5 @@
 <?php
-
+/*debug条配置*/
 return array(
 
     /*
@@ -24,7 +24,7 @@ return array(
     'storage' => array(
         'enabled' => true,
         'driver' => 'file', // file, mongodb, elastic
-        'path' => '../cache/Runtime/debugbar', // For file driver
+        'path' => ROOT_PATH.'/cache/Runtime/debugbar', // For file driver
         'mongodb' => array(  // mongodb driver
             'connection' => 'mongodb://localhost:27017',
             'db'=>'debugbar',

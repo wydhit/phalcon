@@ -4,8 +4,11 @@ namespace Common\Services;
 
 use Common\Exception\LogicException;
 use Common\Exception\UserLoginFailException;
+use Common\Helpers\HttpHelper;
+use Common\Models\WeGroup;
 use Common\Models\WeUser;
 use Common\Services\BaseService;
+use Phalcon\Http\Request;
 
 class UserService extends BaseService
 {
@@ -59,7 +62,7 @@ class UserService extends BaseService
         if (!$groupRepository->GicIsExist($userInfo->u_gic)) {
             throw new UserLoginFailException('用户组不存在');
         }
-        if (!$groupRepository->roleicIsExist($userInfo->u_roleic,$userInfo->u_gic)) {
+        if (!$groupRepository->roleicIsExist($userInfo->u_roleic, $userInfo->u_gic)) {
             throw new UserLoginFailException('用户角色不存在');
         }
         if (!is_array($u_gic)) $u_gic = [$u_gic];
@@ -75,27 +78,45 @@ class UserService extends BaseService
         return $userInfo;
     }
 
-
-
     /**
-     * 获取管理员登录信息
-     * @return mixed
+     * 注册会员
      */
-    public function getBizerInfo()
+    public function addMemberUser($u_mobile, $u_pass)
     {
-        return $this->session->get($this->SESSION_BASE . 'bizerInfo');
+
     }
 
     /**
-     * 保存管理员登录信息
-     * @param array $value
+     * 增加后台管理员
      */
-    public function setBizerInfo($value = [])
+    public function addAdminUser()
     {
-        $setValue['id'] = isset($value['id']) ? $value['id'] : 0;
-        $setValue['u_nick'] = isset($value['u_nick']) ? $value['u_nick'] : ' ';
-        $this->session->set($this->SESSION_BASE . 'bizerInfo', $setValue);
+
     }
 
+    /**
+     * 增加商家用户
+     */
+    public function addSysBizer($data, $agentid = 0)
+    {
+
+        $data['u_gic'] = 'agent';
+        $data['u_roleic'] = 'sys';
+        $user = new WeUser();
+        $user->agentid = $agentid;
+        return $user->addUser($data);
+    }
+
+    /**
+     * 增加代理商用户
+     */
+    public function addAgentUser($data, $agentid = 0)
+    {
+        $data['u_gic'] = 'agent';
+        $data['u_roleic'] = 'sys';
+        $user = new WeUser();
+        $user->agentid = $agentid;
+        return $user->addUser($data);
+    }
 
 }

@@ -8,25 +8,22 @@
 
 namespace Common\Services;
 
-
-use Common\Services\BaseService;
-
 class CommonService extends BaseService
 {
-    public function setLoginFromUrl($url=null)
+    public function setLoginFromUrl($url = null)
     {
-        if($url===null){
-            $url=$this->request->getURI();
+        if ($url === null) {
+            $url = $this->request->getURI();
         }
-        $this->session->set($this->SESSION_BASE.'loginFromUrl',$url);
+        $this->session->set($this->SESSION_BASE . 'loginFromUrl', $url);
     }
 
     public function getLoginFromUrl()
     {
-        $url= $this->session->get($this->SESSION_BASE.'loginFromUrl');
-        if(empty($url)){
+        $url = $this->session->get($this->SESSION_BASE . 'loginFromUrl');
+        if (empty($url)) {
             return '/';
-        }else{
+        } else {
             return $url;
         }
 

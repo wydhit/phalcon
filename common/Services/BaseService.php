@@ -19,7 +19,6 @@ use Common\Traits\ErrMsg;
 
 class BaseService extends BaseInjectable
 {
-    use ErrMsg;
     protected $SESSION_BASE = 'ejshendeng_';
     protected $modelClass ='';
     /**

@@ -62,7 +62,7 @@ var helper = {
                                 }
                             } else {
                                 setTimeout(function () {
-                                    helper.alertError(backData.message, 2);
+                                    helper.alertError(backData.message, 20);
                                 }, 300);
                             }
                             if (successFn && typeof successFn == "function") {
@@ -71,7 +71,7 @@ var helper = {
                         },
                         error: function () {
                             setTimeout(function () {
-                                helper.alertError('请求失败，请刷新重试', 3);
+                                helper.alertError('请求失败，请刷新重试', 30);
                             }, 300);
                         }
                     });
@@ -102,6 +102,7 @@ var helper = {
         var height = $(obj).data('height') ? $(obj).data('height') : 600;
         var width = $(obj).data('width') ? $(obj).data('width') : 800;
         var href = $(obj).data('href');
+        href = helper.addInDialog(href);
         var dialogDivId = 'dialog-message' + parseInt(Math.random() * 1000000);
         var dialogHtml = '<div id="' + dialogDivId + '" class="hide">' +
             '   <div id="dialog-message-loading" >' +
@@ -194,7 +195,13 @@ var helper = {
             } else {
                 obj = $('#' + ii);
             }
-            obj.focus().parents('.form-group').removeClass('has-info').addClass('has-error').append('<div id="name-error" class="help-block">' + inputerr[ii] + '</div>');
+            obj.focus().attr('aria-invalid', true)
+                .removeClass('valid')
+                .addClass('invalid')
+                .parents('.form-group')
+                .removeClass('has-info')
+                .addClass('has-error')
+                .append('<div id="' + ii + '-error" class="help-block">' + inputerr[ii] + '</div>');
         }
     },
     /*跳转*/
@@ -207,10 +214,14 @@ var helper = {
         }
     },
     go: function (url, time) {
-        if (!time) {
+        if (typeof time === 'undefined' || !time) {
             time = 1;
         }
-
+        if (url) {
+            location.href = url;
+        } else {
+            helper.alertError('不可操作');
+        }
     },
     alert: function (type, title, message, closeTimer) {
         if (type !== 'success' && type !== 'error' && type !== 'warning') {
@@ -264,7 +275,76 @@ var helper = {
             confirmButtonColor: '#4F99C6',
             showCancelButton: true
         }, callback);
+    },
+    /**
+     * 对jq validate封装
+     * formId 表单id
+     * jqValidateRules 验证规则
+     * jqValidateMessages 验证规则信息
+     * submitHandler  提交处理函数
+     */
+    validate: function (formId, jqValidateRules, jqValidateMessages, submitHandler) {
+        if (typeof jqValidateRules !== 'object') {
+            jqValidateRules = {};
+        }
+        if (typeof jqValidateMessages !== 'object') {
+            jqValidateMessages = {};
+        }
+        if (typeof submitHandler !== 'function') {
+            alert("警告！无法处理提交");
+            return false;
+        }
+        $('#' + formId).validate({
+            errorElement: 'div',
+            errorClass: 'help-block',
+            focusInvalid: false,
+            focusCleanup: true,
+            onsubmit: true,
+            ignore: "",
+            rules: jqValidateRules,
+            messages: jqValidateMessages,
+            highlight: function (e) {
+                $(e).closest('.form-group').removeClass('has-info').addClass('has-error');
+            },
+            success: function (e) {
+
+                $(e).closest('.form-group').removeClass('has-error')/*.addClass('has-info')*/;
+                $(e).remove();
+            },
+            errorPlacement: function (error, element) {
+
+                if (element.is('input[type=checkbox]') || element.is('input[type=radio]')) {
+                    var controls = element.closest('div[class*="col-"]');
+                    if (controls.find(':checkbox,:radio').length > 1) controls.append(error);
+                    else error.insertAfter(element.nextAll('.lbl:eq(0)').eq(0));
+                }
+                else if (element.is('.select2')) {
+                    error.insertAfter(element.siblings('[class*="select2-container"]:eq(0)'));
+                }
+                else if (element.is('.chosen-select')) {
+                    error.insertAfter(element.siblings('[class*="chosen-container"]:eq(0)'));
+                }
+                else error.insertAfter(element.parent());
+            },
+            submitHandler: submitHandler,
+            invalidHandler: function (form) {
+            }
+        });
+
+    },
+    /*对一个url加上inDialog参数*/
+    addInDialog: function (href) {
+        if (href.indexOf("inDialog") === -1) {
+            if (href.indexOf('?') > -1) {
+                href += "&inDialog=1";
+            } else {
+                href += "?inDialog=1";
+            }
+        }
+        return href;
     }
 };
-helper.init();
+$(function () {
+    helper.init();
+});
 

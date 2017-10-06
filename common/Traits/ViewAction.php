@@ -16,10 +16,8 @@ Trait  ViewAction
 {
     use BaseTrait;
 
-    /*视图模板相关begin*/
-
     /**
-     * 向模板添加一条数据
+     * 向视图添加一条数据
      * @param string $name
      * @param string|mixed $value
      */
@@ -75,7 +73,7 @@ Trait  ViewAction
         return $this->view->getContent();
     }
 
-    var $breadCrumb = [];
+    private $breadCrumb = [];
 
     /**
      * 增加面包屑导航
@@ -95,6 +93,43 @@ Trait  ViewAction
         } else {
             $this->tag->prependTitle($title);
         }
+    }
+    /**
+     * 返回html格式的提示信息
+     * @param string $status
+     * @param string $msg
+     * @param array $data
+     * @param array $errInput
+     * @param string $goUrl
+     * @param bool $inDialog
+     * @return bool|\Phalcon\Mvc\View
+     */
+    public function msg($status = 'error', $message = '', $data = [], $errInput = [], $goUrl = '', $inDialog = null)
+    {
+        if ($inDialog === null) {
+            $inDialog = $this->request->get('inDialog');
+        }
+        if ($inDialog) {
+            return $this->actionRender(compact('status', 'message', 'data', 'errInput', 'goUrl', 'inDialog'), 'msg', 'msg');
+        }
+        return $this->Render(compact('status', 'message', 'data', 'errInput', 'goUrl', 'inDialog'), 'msg', 'msg');
+    }
+    public function exportXls($data = [],$xlsName = '', $controllerName = '', $actionName = '')
+    {
+        if (empty($xlsName)) {
+            $xlsName = date('Y-m-d') . uniqid();
+        }
+        header("Content-Type: application/vnd.ms-excel; charset=UTF-8");
+        header("Pragma: public");
+        header("Expires: 0");
+        header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+        header("Content-Type: application/force-download");
+        header("Content-Type: application/octet-stream");
+        header("Content-Type: application/download");
+        header("Content-Disposition: attachment;filename=$xlsName.xls ");
+        header("Content-Transfer-Encoding: binary ");
+        $actionName = empty($actionName) ? $this->dispatcher->getActionName() . "_export" : $actionName;
+        return  $this->actionRender($data, $controllerName, $actionName);
     }
 
 }

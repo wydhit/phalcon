@@ -3,18 +3,17 @@
 namespace Agent\Controllers;
 
 
+use Agent\Controllers\Validator\LoginValidator;
 use Common\Controllers\BaseController;
 use Common\Helpers\DiHelper;
+use Common\Helpers\StringHelper;
 use Common\Services\AdminService;
 use Common\Services\CommonService;
-use Common\Services\GroupService;
-use Phalcon\Http\Request;
-use Phalcon\Loader;
 
 class LoginController extends BaseController
 {
-    private $loginRole = ['agentOwner'];/*允许登陆的角色*/
-    private $loginGroup='agent';
+    private $loginRole = ['agentadmin'];/*允许登陆的角色*/
+    private $loginGroup = 'agent';
 
     public function initialize()
     {
@@ -24,48 +23,38 @@ class LoginController extends BaseController
 
     public function indexAction()
     {
-        $this->createValidator();
         $this->setCsrfToken('login');
-        $validationJs = $this->getValidationRulesForJs();
-        // $this->addData('validationJs', $validationJs);
         return $this->actionRender();
     }
 
-    public function outLoginAction()
+    public function outLoginAction(AdminService $admin)
     {
-        AdminService::instance()->outLogin('agent');
+        $admin->outLogin('agent');
         $this->response->redirect($this->url->get('/login'));
     }
 
-    public function loginAction(Request $request)
+    public function loginAction(AdminService $admin, CommonService $common)
     {
         $this->checkCsrfToken('login');
-        $this->validationInput($request->get());
-        $u_name = $request->get('u_name');
-        $u_pass = $request->get('u_pass');
-        $loginRes = AdminService::instance()->loginByName($u_name, $u_pass,$this->loginGroup, $this->loginRole);
-        AdminService::instance()->setInfo('agent', [
+        $loginRes = $admin->loginByName(
+            $this->get('u_name'),
+            $this->get('u_pass'),
+            $this->loginGroup,
+            $this->loginRole
+        );
+        $admin->setInfo('agent', [
             'id' => $loginRes->id,
             'u_name' => $loginRes->u_name,
-            'u_nick' => $loginRes->u_nick
+            'u_fullname' => $loginRes->u_fullname,
+            'u_gic' => $loginRes->u_roleic,
+            'u_roleic' => $loginRes->u_gic,
+            'agentid' => $loginRes->agentid,
         ]);
         if ($loginRes) {
-            $goUrl = CommonService::instance()->getLoginFromUrl();
+            $goUrl = $common->getLoginFromUrl();
             return $this->sendSuccessJson('登陆成功', [], [], $goUrl);
         } else {
             return $this->sendErrorJson('登陆失败');
         }
-    }
-
-    public function createValidator()
-    {
-        $className = $this->dispatcher->getControllerClass();
-        $controllerName = $this->dispatcher->getControllerName();
-        $actionName = $this->dispatcher->getActionName();
-        $allNameSpace = $this->loader->getNamespaces();
-        $dir = DiHelper::getDirFromNameSpace($className,$allNameSpace);
-        $validatorClassName=ucfirst($controllerName) . ucfirst($actionName).'Validator';
-        $validatorFile = $dir . '/Validator/' . $validatorClassName. '.php';
-
     }
 }

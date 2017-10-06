@@ -1,5 +1,7 @@
 <?php
+
 namespace Common\Db;
+
 use Phalcon\Db\RawValue;
 use Phalcon\Filter;
 
@@ -19,6 +21,7 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
     {
         return $this->fieldStep($table, $field, $step, $where, '+');
     }
+
     /**
      * 对某表某字段 减少值操作
      * @param $table
@@ -29,8 +32,9 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
      */
     public function decrement($table, $field = null, $step = 0, $where)
     {
-        return $this->fieldStep($table, $field , $step, $where, '-');
+        return $this->fieldStep($table, $field, $step, $where, '-');
     }
+
     /**
      * 对某表某字段 减少值操作 但是限定不能减至0以下
      * @param $table
@@ -41,12 +45,12 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
      */
     public function decrementAboveZero($table, $field = null, $step = 0, $where)
     {
-        $sql="select $field from $table WHERE $where";
-        $result=$this->fetchOne($sql);
-        if($result[$field]<$step){
+        $sql = "select $field from $table WHERE $where";
+        $result = $this->fetchOne($sql);
+        if ($result[$field] < $step) {
             return false;
-        }else{
-           return $this->decrement($table,$field,$step,$where);
+        } else {
+            return $this->decrement($table, $field, $step, $where);
         }
     }
 
@@ -54,11 +58,11 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
     {
         $table = $this->sanitizeKey($table);
         $key = $this->sanitizeKey($field);
-        if (empty($key)||empty($table)) {
+        if (empty($key) || empty($table)) {
             return false;
         }
         $step = (int)$step;
-        if($step<0){
+        if ($step < 0) {
             return false;
         }
         if ($type === '+') {
@@ -81,20 +85,23 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
     {
         return (new Filter())->sanitize($field, 'string');
     }
+
     /*实验方法待用*/
-    public function builder($param=[]){
-        return new Query($this,$param);
+    public function builder($param = [])
+    {
+        //return new Query($this, $param);
     }
 
     public function getQueryBuilder()
     {
-        return new QueryBuilder($this);
+        //return new QueryBuilder($this);
     }
 
     public function quoteSimpleTableName($name)
     {
         return strpos($name, '`') !== false ? $name : "`$name`";
     }
+
     /**
      * Quotes a column name for use in a query.
      * A simple column name has no prefix.
@@ -105,6 +112,7 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
     {
         return strpos($name, '`') !== false || $name === '*' ? $name : "`$name`";
     }
+
     public function quoteColumnName($name)
     {
         if (strpos($name, '(') !== false || strpos($name, '[[') !== false) {
@@ -121,6 +129,7 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
         }
         return $prefix . $this->quoteSimpleColumnName($name);
     }
+
     public function quoteTableName($name)
     {
         if (strpos($name, '(') !== false || strpos($name, '{{') !== false) {
@@ -137,8 +146,6 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
         return implode('.', $parts);
 
     }
-
-
 
 
 }

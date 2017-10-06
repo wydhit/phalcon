@@ -9,6 +9,8 @@
 namespace Common\ServiceProviders;
 
 
+use Common\Helpers\Config;
+use Common\Helpers\ConfigHelper;
 use Phalcon\Db\Adapter\Pdo\Mysql;
 use Phalcon\DiInterface;
 
@@ -26,34 +28,32 @@ class DbServiceProvider extends ServiceProvider
 
     public function register(DiInterface $di)
     {
-        $config = $di->get('config');
-        $dbConfig = $config->get('database')->toArray();
+        $dbConfig=ConfigHelper::get('database',[],true);
         if (empty($dbConfig)) {
             return false;
         }
         /*数据库服务*/
-        $di->setShared('db', function () use ($di, $dbConfig) {
+        $di->setShared('db', function () use ($dbConfig) {
             $adapter = $dbConfig['adapter'];
             unset($dbConfig['adapter']);
             /**
              * @var $db \Common\Db\Mysql
              */
             $db = new $adapter($dbConfig);
-            $db->setEventsManager($di->get('eventManager'));
+            $db->setEventsManager($this->get('eventManager'));
             return $db;
         });
 
         $di->remove('modelsMetadata');
-        $metaDataDir= $config->get('application')->get('cacheDir') . '/metaData/';
+        $metaDataDir= ROOT_PATH . '/cache/metaData/';
         if(!file_exists($metaDataDir)){
             mkdir($metaDataDir);
         }
         $di->setShared('modelsMetadata', function () use ($metaDataDir) {
-            return new \Phalcon\Mvc\Model\MetaData\Files([
+            return new \Phalcon\Mvc\Model\MetaData\Memory([
                 "metaDataDir" =>$metaDataDir,
             ]);
         });
-
         return true;
     }
 }

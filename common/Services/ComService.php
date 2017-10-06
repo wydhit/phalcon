@@ -9,9 +9,11 @@
 namespace Common\Services;
 
 
+use Bizer\Search\ComSearch;
 use Common\Exception\LogicException;
 use Common\Exception\ModelNotFindException;
 use Common\Models\WeCom;
+use Common\Models\WeOrder;
 use Common\Services\BaseService;
 
 /**
@@ -85,5 +87,6 @@ class ComService extends BaseService
     {
         return WeCom::count(['id=:comid: and uid=:uid:', 'bind' => ['comid' => $comid, 'uid' => $agentId]]);
     }
+
 
 }

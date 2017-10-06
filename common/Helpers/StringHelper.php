@@ -32,6 +32,7 @@ class StringHelper
         }
         return array_unique($newArray);
     }
+
     /**
      * 将两个字符串之间的内容替换掉
      * @param string $start
@@ -40,23 +41,23 @@ class StringHelper
      * @param $content
      * @return string
      */
-    public static function changeStrBetween($content='',$start='',$end='',$str='')
+    public static function changeStrBetween($content = '', $start = '', $end = '', $str = '')
     {
-        if(empty($start)|| empty($end)){
+        if (empty($start) || empty($end)) {
             return $content;
         }
-        if(strpos($content,$start)===false || strpos($content,$end)===false){
+        if (strpos($content, $start) === false || strpos($content, $end) === false) {
             return $content;
         }
-        $need=explode($start,$content)[1];
-        $need=explode($end,$need)[0];
-        return str_replace($need,$str,$content);
+        $need = explode($start, $content)[1];
+        $need = explode($end, $need)[0];
+        return str_replace($need, $str, $content);
     }
 
-    public static function dd($data,$isDie=true)
+    public static function dd($data, $isDie = true)
     {
         echo (new Dump())->variable($data);
-        if($isDie){
+        if ($isDie) {
             die();
         }
 

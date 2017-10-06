@@ -1,0 +1,169 @@
+<ul class="nav nav-list">
+    <li class="active">
+        <a>
+            <i class="menu-icon fa fa-tachometer"></i>
+            <span class="menu-text"> 控制面板 </span>
+        </a>
+        <b class="arrow"></b>
+    </li>
+
+    <li >
+        <a href="#" class="dropdown-toggle">
+            <i class="menu-icon fa fa-desktop"></i>
+            <span class="menu-text">店铺管理</span>
+            <b class="arrow fa fa-angle-down"></b>
+        </a>
+        <b class="arrow"></b>
+        <ul class="submenu">
+            <li name="group-list">
+                <a href="<?php echo $this->url->get("/com/list")  ?>" >
+                    <i class="menu-icon fa fa-caret-right"></i>店铺总览
+                </a>
+            </li>
+        </ul>
+    </li>
+    <li >
+        <a href="#" class="dropdown-toggle">
+            <i class="menu-icon fa fa-desktop"></i>
+            <span class="menu-text">订单管理</span>
+            <b class="arrow fa fa-angle-down"></b>
+        </a>
+        <b class="arrow"></b>
+        <ul class="submenu">
+            <li class="">
+                <a href="<?php echo $this->url->get("/order/sdOrder")  ?>">
+                    <i class="menu-icon fa fa-caret-right"></i>
+                    神灯订单
+                </a>
+            </li>
+            <li class="">
+                <a href="<?php echo $this->url->get("/order/dnOrder")  ?>">
+                    <i class="menu-icon fa fa-caret-right"></i>
+                    店内订单
+                </a>
+            </li>
+        </ul>
+    </li>
+
+    <li class="">
+        <a href="#">
+            <i class="menu-icon fa fa-calendar"></i>
+            <span class="menu-text">财务管理
+                <span class="badge badge-transparent tooltip-error" title="2 Important Events">
+                    <i class="ace-icon fa fa-exclamation-triangle red bigger-130"></i>
+                </span>
+            </span>
+        </a>
+        <b class="arrow"></b>
+    </li>
+    <li class="">
+        <a href="#">
+            <i class="menu-icon fa fa-picture-o"></i>
+            <span class="menu-text"> 日历 </span>
+        </a>
+
+        <b class="arrow"></b>
+    </li>
+    <li class="">
+        <a href="#" class="dropdown-toggle">
+            <i class="menu-icon fa fa-file-o"></i>
+            <span class="menu-text">信息<span class="badge badge-primary">5</span></span>
+            <b class="arrow fa fa-angle-down"></b>
+        </a>
+        <b class="arrow"></b>
+        <ul class="submenu">
+            <li class="">
+                <a href="faq.html">
+                    <i class="menu-icon fa fa-caret-right"></i>
+                    未读信息
+                </a>
+                <b class="arrow"></b>
+            </li>
+            <li class="">
+                <a href="error-404.html">
+                    <i class="menu-icon fa fa-caret-right"></i>
+                    通知信息
+                </a>
+                <b class="arrow"></b>
+            </li>
+            <li class="">
+                <a href="error-500.html">
+                    <i class="menu-icon fa fa-caret-right"></i>
+                    警告信息
+                </a>
+                <b class="arrow"></b>
+            </li>
+            <li class="">
+                <a href="grid.html">
+                    <i class="menu-icon fa fa-caret-right"></i>
+                    服务信息
+                </a>
+                <b class="arrow"></b>
+            </li>
+
+        </ul>
+    </li>
+</ul><!-- /.nav-list -->
+<script type="text/javascript">
+
+    try {
+        ace.settings.check('sidebar', 'collapsed');
+    } catch (e) {
+    }
+    function closeSideBar() {
+        $('.nav-list>li').each(function () {
+            $(this).removeClass('open');
+            $(this).removeClass('active');
+        });
+        $('.submenu>li').each(function () {
+            $(this).removeClass('active');
+        });
+    }
+    jQuery(function ($) {
+        closeSideBar();
+        var act = "<?php echo $action; ?>";
+        var controller = "<?php echo $controller; ?>";
+        var act = controller + '-' + act;
+        if (act === 'storecom-storein') {//一个特殊情况  这俩应该打开同一个
+            act = 'storecom-storeout';
+        }
+        if (act === 'storefront-storein') {//一个特殊情况  这俩应该打开同一个
+            act = 'storefront-storeout';
+        }
+
+        if (act === 'device-door') {//一个特殊情况  这俩应该打开同一个
+            act = 'device-list';
+        }
+        if (act === 'sale-sell') {//一个特殊情况  这俩应该打开同一个
+            act = 'sale-front';
+        }
+        if (act === 'finance-listdetail') {//一个特殊情况  这俩应该打开同一个
+            act = 'finance-checklist';
+        }
+        $('.nav-list>li').each(function () {
+            $(this).find('.submenu>li').each(function () {
+                if ($(this).attr('name') === act) {
+                    $(this).addClass('active').parent().parent().addClass('open').addClass('active');
+                }
+                return;
+            });
+            return;
+        });
+        $('#sidebar-shortcuts-large').find('button').each(function(){
+            $(this).click(function(){
+                bootbox.alert('更多功能，敬请期待！');
+            });
+        })
+    });
+
+    //根据权限 隐藏部分菜单
+    //        jQuery(function () {
+    //            var all_access=<?php //echo json_encode($all_access)?>//;
+    //            $('.submenuli').each(function (i,obj) {
+    //                var name=$(obj).attr('name');
+    //              if(jQuery.inArray(name,all_access)<0){
+    //                  $(this).remove();
+    //              }
+    //            });
+    //        });
+</script>

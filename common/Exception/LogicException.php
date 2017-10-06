@@ -19,10 +19,7 @@ class LogicException extends Exception
         if (is_array($message)) {
             $message = var_export($message, true);
         }
-        /**
-         * @var $request Request
-         */
-        $request = DiHelper::getDi()->get('request');
+        $request = DiHelper::getRequest();
         $this->setStatus('error');
         $this->setData($data);
         $this->setErrInput($errInput);
@@ -54,12 +51,12 @@ class LogicException extends Exception
 
     public function returnHtml()
     {
-        HttpHelper::returnMessage($this->outData());
+        HttpHelper::sendMessage($this->outData());
     }
 
     public function returnJson()
     {
-        HttpHelper::returnJson($this->outData());
+        HttpHelper::sendJson($this->outData());
     }
 
     public function outData()

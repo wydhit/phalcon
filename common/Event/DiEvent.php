@@ -26,11 +26,14 @@ class DiEvent
     {
         $parameters = $param['parameters'];
         if ($di->has($param['name'])) {
-            return '';
+            return false;
+        }
+        if (!class_exists($param['name'])) {
+            return false;
         }
         $reflectionClass = new \ReflectionClass($param['name']);
         if ($reflectionClass->getConstructor() === null) {/*没有构造函数*/
-            return '';
+            return false;
         }
 
         $classParams = $reflectionClass->getConstructor()->getParameters();
@@ -40,8 +43,8 @@ class DiEvent
             if (isset($parameters[$field])) {
                 $newClassParams[$field] = $parameters[$field];
             } elseif (isset($classParam->getClass()->name)) {
-                if(! $classParam->getClass()->isInstantiable()){
-                    return'';
+                if (!$classParam->getClass()->isInstantiable()) {
+                    return false;
                 }
                 $deClass = $classParam->getClass()->name;
                 $classNames = explode('\\', $deClass);
@@ -55,7 +58,7 @@ class DiEvent
                 if ($classParam->isDefaultValueAvailable()) {
                     $newClassParams[$field] = $classParam->getDefaultValue();
                 } else {
-                    return'';
+                    return false;
                 }
             }
         }

@@ -13,7 +13,6 @@ namespace Common\Core;
  * */
 
 use Common\Helpers\DiHelper;
-use Common\Helpers\HttpHelper;
 
 class ReturnData
 {
@@ -58,7 +57,7 @@ class ReturnData
 
     public function getReturnJson()
     {
-        return json_encode($this->getReturnData(),JSON_FORCE_OBJECT);
+        return json_encode($this->getReturnData(), JSON_FORCE_OBJECT);
     }
 
     public function getReturnMessage($code = null)
@@ -180,8 +179,8 @@ class ReturnData
      */
     public function setGoUrl($goUrl)
     {
-        if(empty($goUrl)){
-            $goUrl=DiHelper::getDi()->get('request')->getHTTPReferer();
+        if (empty($goUrl)) {
+            $goUrl = DiHelper::getRequest()->getHTTPReferer();
         }
         $this->goUrl = $goUrl;
     }

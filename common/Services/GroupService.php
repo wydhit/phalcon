@@ -106,6 +106,7 @@ class GroupService extends BaseService
             return [];
         }
     }
+
     /**
      * 返回某用户组下的所有角色 ['sale','agent'] 只是单纯的角色名组成的数组
      * @param string $groupIc
@@ -113,12 +114,12 @@ class GroupService extends BaseService
      */
     public function getRoleicListByGroupIc($groupIc = '', $isuse = true)
     {
-        $res=[];
-        foreach ($this->getRoleicByGroupIc($groupIc,$isuse) as $item) {
-            $res[]=$item['ic'];
+        $res = [];
+        foreach ($this->getRoleicByGroupIc($groupIc, $isuse) as $item) {
+            $res[] = $item['ic'];
         }
         return $res;
-        
+
     }
 
 

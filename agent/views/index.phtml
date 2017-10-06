@@ -2,7 +2,7 @@
 if (empty($assetUri)) {
     $assetUri = 'http://static.e.com/';
 }
-$agentName=isset($agentInfo['u_nick'])?$agentInfo['u_nick']:'未登录';
+$fullname=isset($fullname)?$fullname:'未登录';
 ?>
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -55,16 +55,26 @@ $agentName=isset($agentInfo['u_nick'])?$agentInfo['u_nick']:'未登录';
     <![endif]-->
     <script src="<?= $assetUri ?>ace/js/jquery-ui.min.js"></script>
     <script src="<?php echo $assetUri; ?>ace/js/jquery.ui.datepicker-zh-CN.js"></script>
+
     <script src="<?= $assetUri ?>ace/js/jquery.ui.touch-punch.min.js"></script>
     <!-- ace scripts -->
     <script src="<?= $assetUri ?>ace/js/ace-elements.min.js"></script>
     <script src="<?= $assetUri ?>ace/js/ace.min.js"></script>
 <!--    <script src="--><?//= $assetUri ?><!--ace/js/bootbox.js"></script>-->
 
+    <!--验证-->
     <script src="<?php echo $assetUri; ?>ace/js/jquery.validate.min.js"></script>
     <script src="<?php echo $assetUri; ?>ace/js/jquery.validate_messages_cn.js"></script>
+
+    <!--弹框提示信息-->
     <link rel="stylesheet" href="<?php echo $assetUri; ?>ace/css/sweetalert.css">
     <script src="<?= $assetUri ?>ace/js/sweetalert.min.js"></script>
+
+    <!--下拉搜索-->
+    <link rel="stylesheet" href="<?php echo $assetUri; ?>ace/css/select2.min.css" />
+    <script src="<?php echo $assetUri; ?>ace/js/select2.full.min.js"></script>
+    <script src="<?php echo $assetUri; ?>ace/js/i18n/zh-CN.js"></script>
+
 
 </head>
 <body class="no-skin">
@@ -124,11 +134,11 @@ $agentName=isset($agentInfo['u_nick'])?$agentInfo['u_nick']:'未登录';
                     <a data-toggle="dropdown" href="#" class="dropdown-toggle">
                         <img class="nav-user-photo" src="<?= $assetUri ?>ace/images/avatars/user.jpg"
                              alt="Jason's Photo"/>
-                        <span class="user-info"><small>欢迎光临,</small><?php echo $agentName ?></span>
+                        <span class="user-info"><small>欢迎光临,</small><?php echo $fullname ?></span>
                         <i class="ace-icon fa fa-caret-down"></i>
                     </a>
                     <ul class="user-menu dropdown-menu-right dropdown-menu dropdown-yellow dropdown-caret dropdown-close">
-                        <li>
+                        <li style="display: none;">
                             <a href="#">
                                 <i class="ace-icon fa fa-cog"></i>
                                 个人设置
@@ -210,15 +220,7 @@ $agentName=isset($agentInfo['u_nick'])?$agentInfo['u_nick']:'未登录';
         <i class="ace-icon fa fa-angle-double-up icon-only bigger-110"></i>
     </a>
 </div><!-- /.main-container -->
-
 <script>
-    $.ajax({
-        url:'/a/a.html',
-        dataType:'json',
-        success:function () {
-        }
-    })
-
 </script>
 </body>
 </html>

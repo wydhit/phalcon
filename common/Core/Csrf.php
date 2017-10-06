@@ -8,7 +8,6 @@
 
 namespace Common\Core;
 
-use Common\Core\Exception\UserException;
 use Common\Exception\LogicException;
 use Common\Helpers\ThrowHelper;
 use Phalcon\Security\Random;
@@ -29,9 +28,8 @@ class Csrf extends BaseInjectable
      */
     public $_random;
 
-    public function initialize()
+    public function __construct()
     {
-        parent::initialize();
         $this->_random = new Random();
     }
 
@@ -61,12 +59,12 @@ class Csrf extends BaseInjectable
     {
         $localCsrfValue = $this->session->get(self::CSRF_NAME . $formName);
         $cookieCsrfValue = $this->cookies->getValue(self::CSRF_NAME . $formName);
-        ThrowHelper::ThrowIf(empty($localCsrfValue) || empty($cookieCsrfValue),'无法识别的请求，请刷新重试');
+        ThrowHelper::ThrowIf(empty($localCsrfValue) || empty($cookieCsrfValue), '无法识别的请求，请刷新重试');
         $valueTime = explode(':::', $cookieCsrfValue)[1];
         if (($valueTime - time()) < 0) {
             throw new LogicException('请求超时，请刷新重试');
         }
-        ThrowHelper::ThrowIf($localCsrfValue !== $cookieCsrfValue,'请求失效，请重试');
+        ThrowHelper::ThrowIf($localCsrfValue !== $cookieCsrfValue, '请求失效，请重试');
         /*发放一个新的*/
         $this->setCsrfToken($formName);
         return true;

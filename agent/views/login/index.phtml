@@ -115,16 +115,28 @@
 
 <!-- inline scripts related to this page -->
 <script type="text/javascript">
-    var jqValidateRules =<?php echo (isset($validationJs) && is_array($validationJs)) ? json_encode($validationJs) : '{}';?> ;
-    jqValidateRules['other'] = '';
     $('#login').validate({
         errorElement: 'div',
         errorClass: 'help-block',
         focusInvalid: true,
         onsubmit: true,
         ignore: "",
-        rules: jqValidateRules,
-        messages: {},
+        rules: {
+            u_name:{
+                required:true
+            },
+            u_pass:{
+                required:true
+            }
+        },
+        messages: {
+            u_name:{
+                required:'必须输入用户名'
+            },
+            u_pass:{
+                required:'必须输入密码'
+            }
+        },
         highlight: function (e) {
             $(e).closest('.form-group').removeClass('has-info').addClass('has-error');
         },
@@ -157,7 +169,7 @@
                     if(json.status==='success'){
                         helper.alertSuccess(json.message);
                         if(json.goUrl){
-                            helper.go(json.url,2);
+                            helper.go(json.goUrl,2);
                         }
                     }else{
                         helper.formShowError(json.errInput,form);

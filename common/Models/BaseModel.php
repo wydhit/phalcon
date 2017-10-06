@@ -2,20 +2,16 @@
 
 namespace Common\Models;
 
-use Common\Core\BaseValidation;
+use Common\Exception\LogicException;
+use Common\Exception\ModelExExecuteException;
 use Common\Exception\ValidationFailedException;
 use Common\Helpers\DiHelper;
-use Common\Helpers\HttpHelper;
 use Common\Helpers\NumberHelper;
-use Common\Helpers\StringHelper;
 use Common\Helpers\TimeHelper;
-use Common\Traits\ErrMsg;
-use Common\Traits\ModelEnumTrait;
-use Helper\ModelTrait;
-use Phalcon\Di;
 use \Phalcon\Mvc\Model;
 use Phalcon\Mvc\Model\Resultset\Simple;
 use Phalcon\Tag;
+use Phalcon\Validation\Validator\PresenceOf;
 
 /**
  * Class BaseModel
@@ -23,42 +19,9 @@ use Phalcon\Tag;
  */
 class BaseModel extends Model
 {
-    use ModelEnumTrait;
     private static $modelRelationCache = [];
-//    public function create($data = null, $whiteList = null)
-//    {
-//       return parent::create($data,$whiteList);
-//       /**
-//        *
-//        * 执行更新或者插入会顺序执行以下调用
-//        * prepareSave model::save 2995   [insert|update] 不需要返回不终止操作
-//        * beforeValidation model::_preSave 1998   [insert|update] 返回false 终止操作
-//        *   beforeValidationOnCreate model::_preSave 2006   [insert] 返回false 终止操作
-//        *   beforeValidationOnUpdate model::_preSave 2010   [update] 返回false 终止操作
-//        * 插入或者更新数据 会进行非空验证 验证失败会触发 onValidationFails 及 notDeleted|notSaved
-//        * .....
-//        */
-//    }
-//    public function beforeSave()
-//    {
-//        /*这里发生在验证之后*/ /*可以做些预定义的操作*/
-//    }
-//    public function beforeUpdate()
-//    {
-//        /*这里发生在验证之后*/ /*可以做些预定义的操作*/
-//    }
-
-    public function onValidationFails()
-    {
-        /*validation()返回false 会触发该函数*/
-        /*非空验证失败也会触发该函数*/
-        $message = join("\r\n", $this->getErrInput());
-        throw new ValidationFailedException($message, [], $this->getErrInput());
-    }
-
-
     /**
-     * 利用模型关系设置 一次性把所有关联数据都读取出来 仅使用时hasOne关系
+     * 利用模型关系设置 一次性把所有关联数据都读取出来
      * @param string $alias
      * @param null $parameters
      * @return Model\ResultsetInterface
@@ -107,7 +70,6 @@ class BaseModel extends Model
             $param[0] .= " and " . $where;
         }
         $referencedResults = $referencedModel::find($param);
-
         $result = [];
         $relationType = $relation->getType();
         switch ($relationType) {
@@ -123,8 +85,8 @@ class BaseModel extends Model
                 break;
         }
         self::$modelRelationCache[static::class][$alias] = [
-            'primaryField'=>$primaryField,
-            'data'=>$result
+            'primaryField' => $primaryField,
+            'data' => $result
         ];
         unset($result);
         unset($referencedResults);
@@ -137,9 +99,9 @@ class BaseModel extends Model
         if (isset(self::$modelRelationCache[$calledClass])) {
             $lowerProperty = strtolower($property);
             if (isset(self::$modelRelationCache[$calledClass][$lowerProperty])) {
-                $thisAliasRelationCache=self::$modelRelationCache[$calledClass][$lowerProperty];/*当前别名下的所有模型记录*/
-                $primaryField=$thisAliasRelationCache['primaryField'];
-                $value=$this->$primaryField;
+                $thisAliasRelationCache = self::$modelRelationCache[$calledClass][$lowerProperty];/*当前别名下的所有模型记录*/
+                $primaryField = $thisAliasRelationCache['primaryField'];
+                $value = $this->$primaryField;
                 if (isset($thisAliasRelationCache['data'][$value])) {
                     return $thisAliasRelationCache['data'][$value];
                 }
@@ -222,7 +184,41 @@ class BaseModel extends Model
 
     public static function rules()
     {
+        return [
+            'name'=>[
+                'PresenceOf'=>new PresenceOf(['label'=>self::getLabel('name')])
+            ]
+        ];
+    }
+    public static function getRule($field,$ruleName='')
+    {
+        $rules=static::rules();
+        if(isset($rules[$field])){
+            $rules=$rules[$field];
+        }else{
+            return [];
+        }
+        if(empty($ruleName)){
+            return $rules;
+        }elseif(isset($rules[$ruleName])){
+            return $rules[$ruleName];
+        }else{
+            return [];
+        }
+
+    }
+    public static function  labels ()
+    {
         return [];
+    }
+    public static function getLabel($field='',$defaultLabel='')
+    {
+        $allLabel=self::labels();
+        if(isset($allLabel[$field])){
+            return $allLabel[$field];
+        }else{
+            return $defaultLabel;
+        }
     }
 
     /**
@@ -325,7 +321,81 @@ class BaseModel extends Model
             $message = join("<br/>\r\n", $this->getMessages());
             throw new ValidationFailedException($message, [], $this->getErrInput());
         }
-
     }
+    /**
+     * 检查当前数据是否属于某个店铺
+     * @param $comid
+     * @param string $field
+     * @return bool
+     * @throws LogicException
+     */
+    public function checkIsBelongCom($comid, $field = 'comid',$message='')
+    {
+        if (isset($this->$field) && $this->$field === $comid) {
+            return true;
+        } else {
+            $message=empty($message)?'您没有权限操作':trim($message);
+            throw new LogicException($message);
+        }
+    }
+    /**
+     * 检查当前数据是否属于某个代理商
+     * @param $comid
+     * @param string $field
+     * @return bool
+     * @throws LogicException
+     */
+    public function checkIsBelongAgent($agentId=0, $field = 'agentid',$message='')
+    {
+        if (isset($this->$field) && $this->$field === $agentId) {
+            return true;
+        } else {
+            $message=empty($message)?'您没有权限操作':trim($message);
+            throw new LogicException($message);
+        }
+    }
+
+
+    /**
+     * 不能正确保存直接抛出异常
+     * @param array $data
+     * @param $whiteList
+     * @return bool
+     * @throws ModelExExecuteException
+     */
+    public function saveWithException($data=[],$whiteList=[],$message='')
+    {
+        if($this->save($data,$whiteList)){
+
+            return true;
+        }else{
+            $errinput=$this->getErrInput();
+
+            $message=empty($message)?$this->getMessagesStr("\r\n"):trim($message);
+            $message=empty($message)?"保存失败":$message;
+            throw new ModelExExecuteException($message,[],$errinput);
+        }
+    }
+
+    /**
+     * 获取拼接成字符串之后的信息
+     * @param string $split
+     * @return string
+     */
+    public function getMessagesStr($split="\r\n")
+    {
+        return join($split,$this->getMessages());
+    }
+
+    /**
+     * 软删除
+     * @param string $delField
+     */
+    public function softDel($delField='isdel')
+    {
+        $this->$delField=1;
+        return $this->saveWithException();
+    }
+
 
 }

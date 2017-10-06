@@ -17,19 +17,26 @@ use \Common\Exception\ValidationFailedException;
 Trait  ControllerValid
 {
     use BaseTrait;
+
+    /**
+     * @deprecated 不再推荐使用
+     * @param null $validationClass
+     * @param null $actionName
+     * @return array
+     */
     public function getValidationRulesForJs($validationClass = null, $actionName = null)
     {
         $validationClass = $this->getValidationName($validationClass);
-        $actionName=$this->getValidationActionName($actionName);
-        if(!class_exists($validationClass)){
-         return [];
+        $actionName = $this->getValidationActionName($actionName);
+        if (!class_exists($validationClass)) {
+            return [];
         }
         /**
          * @var $result \Phalcon\Validation\Message\Group
          * @var $validator BaseValidation
          */
         $validator = new $validationClass();
-        if (method_exists($validator,$actionName)){
+        if (method_exists($validator, $actionName)) {
             $validator->{$actionName}();
         }
 
@@ -37,20 +44,22 @@ Trait  ControllerValid
     }
 
     /**
+     * 不再推荐使用
      * 自动寻找验证器 并验证输入 如果通过验证则返回true  不通过则抛出异常
+     * @deprecated
      * @param $input
      * @param string $validatorName
      * @throws LogicException
      * @return true
      */
-    public function validationInput($input=[], $validationClass=null,$actionName = null)
+    public function validationInput($input = [], $validationClass = null, $actionName = null)
     {
-        if(empty($input)){
-            $input=$this->request->get();
+        if (empty($input)) {
+            $input = $this->request->get();
         }
         $validationClass = $this->getValidationName($validationClass);
-        $actionName=$this->getValidationActionName($actionName);
-        if(!class_exists($validationClass)){
+        $actionName = $this->getValidationActionName($actionName);
+        if (!class_exists($validationClass)) {
             return true;
         }
         /**
@@ -58,7 +67,7 @@ Trait  ControllerValid
          * @var $validator \Phalcon\Validation
          */
         $validator = new $validationClass();
-        if (method_exists($validator,$actionName)){
+        if (method_exists($validator, $actionName)) {
             $validator->{$actionName}();
         }
 
@@ -74,11 +83,13 @@ Trait  ControllerValid
                 }
             }
         }
-        ThrowHelper::ThrowIfNotEmpty($message,'',new ValidationFailedException('输入有误',[],$message));
+        ThrowHelper::ThrowIfNotEmpty($message, '', new ValidationFailedException('输入有误', [], $message));
         return true;
     }
+
     /**
      * 自动寻找验证器
+     * @deprecated
      * @param null $controllerName
      * @param null $actionName
      * @return string
@@ -86,7 +97,7 @@ Trait  ControllerValid
     private function getValidationName($validatorName = null)
     {
 
-        if(empty($validatorName)){
+        if (empty($validatorName)) {
             $validatorName = $this->dispatcher->getControllerClass();
             $validatorName = str_replace('\Controllers', '\Validator', $validatorName);
             $validatorName = str_replace('Controller', 'Validator', $validatorName);
@@ -97,14 +108,18 @@ Trait  ControllerValid
             return '';
         }
     }
-    private function getValidationActionName($actionName=null)
+
+    /**
+     * @deprecated
+     * @param null $actionName
+     * @return string
+     */
+    private function getValidationActionName($actionName = null)
     {
-        if($actionName===null){
-            return $this->dispatcher->getActionName().'Action';
-        }else{
-            return trim($actionName).'Action';
+        if ($actionName === null) {
+            return $this->dispatcher->getActionName() . 'Action';
+        } else {
+            return trim($actionName) . 'Action';
         }
     }
-
-
 }

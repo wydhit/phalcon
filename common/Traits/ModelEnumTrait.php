@@ -7,7 +7,11 @@
  */
 
 namespace Common\Traits;
-
+/**
+ * Trait ModelEnumTrait
+ * @deprecated
+ * @package Common\Traits
+ */
 
 trait ModelEnumTrait
 {

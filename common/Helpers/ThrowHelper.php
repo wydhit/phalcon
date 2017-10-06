@@ -1,5 +1,7 @@
 <?php
+
 namespace Common\Helpers;
+
 use Common\Exception\LogicException;
 
 /**
@@ -30,6 +32,7 @@ class ThrowHelper
     {
         self::ThrowIf(empty($value), $message, $exception);
     }
+
     public static function ThrowIfNotEmpty($value, $message = '', $exception = null)
     {
         self::ThrowIf(!empty($value), $message, $exception);

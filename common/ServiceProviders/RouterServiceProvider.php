@@ -8,6 +8,7 @@
 
 namespace Common\ServiceProviders;
 
+use Common\Helpers\StringHelper;
 use Phalcon\Mvc\Router;
 use Phalcon\DiInterface;
 

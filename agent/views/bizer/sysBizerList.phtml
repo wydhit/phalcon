@@ -1,0 +1,92 @@
+<?php
+use Common\Tags\CommonTags;
+use Phalcon\Tag;
+?>
+<div class="page-content">
+    <div class="page-header" style="padding: 0;margin:0;">
+        <div id="search_box">
+            <div class="widget-box">
+                <div class="widget-body">
+                    <div class="widget-main" style="padding: 4px;min-height: 42px">
+                        <form id="searchForGrid" class="form-search form-inline" data-grid="grid-table">
+                        </form>
+                        <button type="button"
+                                title="添加商家用户"
+                                data-href="<?php echo $this->url->get('bizer/sysBizerAdd') ?>"
+                                class="btn btn-primary btn-sm pull-right"
+                                onclick="helper.dialogOpen(this)">
+                            <i class="ace-icon fa fa-trash-o bigger-120 "></i>
+                            添加商家用户
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div><!-- /.page-header -->
+    <div class="row">
+        <div class="col-xs-12">
+            <table id="grid-table" data-url="<?=\Common\Helpers\HttpHelper::currentUrl()  ?>"></table>
+            <div id="grid-pager"></div>
+            <!-- PAGE CONTENT ENDS -->
+        </div><!-- /.col -->
+    </div><!-- /.row -->
+</div><!-- /.page-content -->
+<script>
+    var editUrl="<?=$this->url->get('/bizer/sysBizerEdit')?>";
+    var delUrl="<?=$this->url->get('/bizer/sysBizerDel')?>";
+    var editPassUrl="<?=$this->url->get('/bizer/sysBizerPassEdit')?>";
+    var addComUrl="<?=$this->url->get('/com/add?sysBizerId=')?>";
+    dataGridHelper.show('grid-table', 'grid-pager',
+        ['ID', '用户名', '昵称', '审核', '锁定', '操作'],
+        [
+            {name: 'id', index: 'id', sortable: true},
+            {name: 'u_name', index: 'u_name', sortable: true},
+            {name: 'u_nick', index: 'u_nick', sortable: true},
+            {name: 'ischeckTips', index: 'ischeck', sortable: true},
+            {name: 'islockTips', index: 'islock', sortable: true},
+            {name: 'id', index: 'id',width:180, formatter:function (cellvalue, options, rowObject) {
+                var thisEditUrl=editUrl+'/'+cellvalue+"?inDialog=1";
+                var thisDelUrl=delUrl+'/'+cellvalue;
+                var thisEditPassUrl=editPassUrl+'/'+cellvalue;
+                var thisAddComUrl=addComUrl+'/'+cellvalue;
+                var editButton='<input ' +
+                    'type="button" ' +
+                    'value="编辑" ' +
+                    'onclick="helper.dialogOpen(this)" ' +
+                    'data-href="' + thisEditUrl + '" ' +
+                    'title="编辑" ' +
+                    'class="btn btn-primary btn-sm" /> ';
+                var editPassButton='<input ' +
+                    'type="button" ' +
+                    'value="修改密码" ' +
+                    'onclick="helper.dialogOpen(this)" ' +
+                    'data-href="' + thisEditPassUrl + '" ' +
+                    'title="修改密码" ' +
+                    'class="btn btn-primary btn-sm" /> ';
+                var delButton='<input ' +
+                    'type="button" ' +
+                    'value="删除" ' +
+                    'onclick="comUserDel(this)" ' +
+                    'data-href="' + thisDelUrl + '" ' +
+                    'title="删除" ' +
+                    'class="btn btn-danger btn-sm" /> ';
+                var addComButton='<input ' +
+                    'type="button" ' +
+                    'value="添加店铺" ' +
+                    'onclick="helper.dialogOpen(this)" ' +
+                    'data-href="' + thisAddComUrl + '" ' +
+                    'title="添加店铺" ' +
+                    'class="btn btn-danger btn-sm" /> ';
+                return editButton+editPassButton+delButton+addComButton;
+            }}
+        ]
+    );
+</script>
+<script>
+    function comUserDel(obj) {
+        helper.changeAction(obj,function () {
+            dataGridHelper.gridSelectorAll['grid-table'].trigger("reloadGrid");
+        });
+    }
+</script>

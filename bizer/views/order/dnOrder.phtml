@@ -1,0 +1,205 @@
+<?php
+
+use Common\Tags\CommonTags;
+use Phalcon\Tag;
+use \Common\Helpers\NumberHelper;
+use \Common\Helpers\HttpHelper;
+
+?>
+<div class="page-content">
+    <div class="page-header" style="padding: 0;margin:0;">
+        <div id="search_box">
+            <div class="widget-box">
+                <div class="widget-body">
+                    <div class="widget-main" style="padding: 4px;min-height: 42px">
+                        <form id="search" class="form-search form-inline" data-grid="grid-table">
+                            <?php echo CommonTags::datePicker('startTime') ?>
+                            至
+                            <?php echo CommonTags::datePicker('endTime') ?>
+                            <script type="text/javascript">
+                                $("#startTime").css('width', '90px');
+                                $("#endTime").css('width', '90px');
+                            </script>
+                            <?php echo Tag::selectStatic([
+                                'order_status',
+                                [
+                                    'all' => '定单交易状态',
+                                    'ok' => '交易成功',
+                                    'ispayed' => '已支付',
+                                ],
+                                'class'=>'form-control input-small',
+                            ]) ?>
+
+                            <?php echo Tag::selectStatic([
+                                'door_status',
+                                [
+                                    'all' => '柜门状态',
+                                    'yes' => '正常开启',
+                                    'no' => '未正常开启',
+                                    'outline' => '网络异常',
+                                ],
+                                'class'=>'form-control input-small',
+                            ]) ?>
+                            <?php echo Tag::textField([
+                                    'title',
+                                'class'=>'form-control input-large search-query',
+                                'placeholder'=>'商品名称'
+                            ]) ?>
+                            <button type="submit" id="mysearch_button" class="btn btn-purple btn-sm ">
+                                搜索<i class="icon-search icon-on-right bigger-110"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div><!-- /.page-header -->
+    <div class="alert-warning tips-info" style="height:60px;line-height: 60px; vertical-align: middle; font-size: 1.5em; padding-left: 1.1em;">
+        定单总数：<span style="color:orangered;"><?php echo $records?></span>&nbsp;&nbsp;&nbsp;&nbsp;
+        总价合计：<span style="color:orangered;"><?php echo NumberHelper::renderMoney($allprice); ?></span>元&nbsp;&nbsp;&nbsp;&nbsp;
+        利润合计：<span style="color:orangered;"><?php echo NumberHelper::renderMoney($commission);?></span>元
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <table id="simple-table" class="table table-striped  table-bordered table-hover">
+                <thead>
+                <tr>
+                    <th width="50" style="text-align: center;padding:0;">
+                        <a href="#" class="green show-details-btn"
+                           data-rel="tooltip"
+                           style="font-size: 28px"
+                           data-status="open"
+                           title="展开全部商品信息">
+                            <i class="ace-icon fa fa-angle-double-up"></i>
+                        </a>
+                    </th>
+                    <th width="30">ID</th>
+                    <th>定单总额</th>
+                    <th>店铺佣金</th>
+                    <th>时间</th>
+                    <th>用户ID</th>
+                    <th>店铺</th>
+                    <th>铺位</th>
+                    <th>定单状态</th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($rows as $key => $order): ?>
+                    <tr>
+                        <td style="text-align: center">
+                            <a style="cursor:pointer;" class="ui-sghref sub-show-details-btn">
+                                <i class="ace-icon fa fa-minus center bigger-110 blue"></i>
+                            </a>
+                        </td>
+                        <td><?= $order['id'] ?></td>
+                        <td><?= NumberHelper::renderMoney($order['allprice']) ?></td>
+                        <td><?= NumberHelper::renderMoney($order['commission']) ?></td>
+                        <td><?= $order['stime'] ?></td>
+                        <td><?= $order['uid'] ?></td>
+                        <td><?= $order['comTitle'] ?></td>
+                        <td>
+                            <?= $order['building'] ?>-
+                            <?= $order['floor'] ?>-
+                            <?= $order['placeTitle'] ?>
+                        </td>
+                        <td><?= \Common\Models\WeOrder::getOrderStatusTips($order['mystatus']) ?></td>
+                    </tr>
+                    <tr class="detail-row open">
+                        <td>商 品 信 息</td>
+                        <td colspan="7" style="padding: 1px;">
+                            <div class="table-detail" style="border: 0;padding-top: 1px;padding-left:1px;">
+                                <div class="row">
+                                    <div class="col-xs-12 col-sm-12">
+                                        <table class="table table-bordered" style="">
+                                            <tr>
+                                                <td width="50">商品id</td>
+                                                <td width="200">商品名称</td>
+                                                <td width="50">商品单价</td>
+                                                <td width="50">数量</td>
+                                                <td width="50">总价</td>
+                                                <td width="50">佣金</td>
+                                                <td width="50">柜门</td>
+                                                <td width="50">开门状态</td>
+                                            </tr>
+                                            <?php if (isset($order['mygoods']) && is_array($order['mygoods'])): ?>
+                                                <?php foreach ($order['mygoods'] as $key => $value): ?>
+                                                    <tr>
+                                                        <td><?= $value->comgoodsid ?></td>
+                                                        <td>
+                                                            <span class="tooltip-info" data-rel="tooltipImg"
+                                                                  data-placement="left" title="">
+                                                            <?php
+                                                            echo HttpHelper::preImgHtml($value->preimg, 30, 30);
+                                                            ?>
+                                                            <?= $value->title ?>
+                                                            </span>
+                                                        </td>
+                                                        <td><?= NumberHelper::renderMoney($value->price) ?></td>
+                                                        <td><?= $value->counts ?></td>
+                                                        <td><?= NumberHelper::renderMoney($value->allprice) ?></td>
+                                                        <td><?= NumberHelper::renderMoney($value->commission) ?></td>
+                                                        <td><?= $value->doortitle ?></td>
+                                                        <td><?php echo \Common\Models\WeDoor::getDoorOpenStatusTips(
+                                                                $value->doortitle,
+                                                                $order['badlocker'],
+                                                                $order['goodlocker']
+                                                            ) ?>
+                                                        </td>
+                                                    </tr>
+                                                <?php endforeach ?>
+                                            <?php endif ?>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                <?php endforeach ?>
+                </tbody>
+            </table>
+            <div id="grid-pager">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div id="dynamic-table_paginate" class="dataTables_paginate paging_simple_numbers">
+                            <ul class="pagination" style="float:left;">
+                                <?php echo HttpHelper::page($records,$limit) ?>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <!-- PAGE CONTENT ENDS -->
+        </div><!-- /.col -->
+    </div><!-- /.row -->
+</div><!-- /.page-content -->
+<script>
+    $('[data-rel=tooltip]').tooltip();
+    $('[data-rel=tooltipImg]').tooltip({
+        content: function () {
+            var imgSrc = $(this).find('img').attr('src');
+            return '<img src="' + imgSrc + '">';
+        }
+    });
+    $('.show-details-btn').on('click', function (e) {
+        e.preventDefault();
+        $(this).find(ace.vars['.icon']).toggleClass('fa-angle-double-down').toggleClass('fa-angle-double-up');
+        var status = $(this).attr('data-status');
+        if (status === 'open') {
+            $('.sub-show-details-btn').find(ace.vars['.icon']).addClass('fa-plus').removeClass('fa-minus');
+            $(".detail-row").removeClass('open');
+            $(this).attr("data-status", 'close').attr('title', '收起全部商品信息');
+        } else {
+            $('.sub-show-details-btn').find(ace.vars['.icon']).removeClass('fa-plus').addClass('fa-minus');
+            $(".detail-row").addClass('open');
+            $(this).attr("data-status", 'open').attr('title', '展开全部商品信息');
+        }
+    });
+    $('.sub-show-details-btn').on('click', function (e) {
+        e.preventDefault();
+        $(this).closest('tr').next().toggleClass('open');
+        $(this).find(ace.vars['.icon']).toggleClass('fa-plus').toggleClass('fa-minus');
+    });
+
+</script>
+

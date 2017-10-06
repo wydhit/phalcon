@@ -1,4 +1,6 @@
 <?php
+define('APP_BEGIN_TIME', microtime(true));
+define('APP_BEGIN_MEMORY', memory_get_usage());
 /*这三个必须定义*/
 define('PROJECT_PATH', dirname(__DIR__));//当前项目目录
 define('ROOT_PATH', dirname(PROJECT_PATH));//总的根目录

@@ -14,13 +14,5 @@ class Bootstrap extends BaseBootstrap
     {
         parent::__construct($loader);
     }
-
-    public function serviceProvider()
-    {
-        return [
-            ViewServiceProvider::class,
-            SessionServiceProvider::class,
-            CookieServiceProvider::class
-        ];
-    }
 }
+

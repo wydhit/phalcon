@@ -9,7 +9,9 @@
 namespace Common\ServiceProviders;
 
 
-use \Phalcon\DiInterface ;
+use Common\Helpers\Config;
+use Common\Helpers\ConfigHelper;
+use \Phalcon\DiInterface;
 use Phalcon\Mvc\Url;
 
 /**
@@ -21,10 +23,9 @@ class UrlServiceProvider extends ServiceProvider
 {
     public function register(DiInterface $di)
     {
-        $config=$di->get('config');
-        $di->setShared('url', function () use ($config) {
+        $di->setShared('url', function () {
             $url = new Url();
-            $url->setBaseUri($config->get('application')->get('baseUri','/'));
+            $url->setBaseUri(ConfigHelper::get('application.baseUri', '/'));
             return $url;
         });
 

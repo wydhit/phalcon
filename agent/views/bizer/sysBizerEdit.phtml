@@ -1,0 +1,55 @@
+<?php
+$form = isset($form) ? $form : [];
+if (!$form instanceof \Common\Forms\BaseForm) {
+    die('表单解析错误');
+}
+$formAction = isset($formAction) ? $formAction : \Common\Helpers\HttpHelper::currentUrl();
+$formId = uniqid();
+$validatorJs = $form->getValidatorJs();
+$validatorRules=isset($validatorJs['rules'])?$validatorJs['rules']:[];
+$validatorMessages=isset($validatorJs['messages'])?$validatorJs['messages']:[];
+?>
+<form action="<?= $formAction ?>" method="post" id="Form<?= $formId ?>" class="form-horizontal">
+    <?php foreach ($form as $key => $element): ?>
+        <?php echo $form->renderAce($element->getName()) ?>
+    <?php endforeach ?>
+    <div class="hr hr-12"></div>
+    <?php echo \Common\Tags\CommonTags::submitReset() ?>
+    <script>
+        var formId = 'Form<?=$formId?>';
+        var jqValidateRules = <?=json_encode($validatorRules)?>;
+        var jqValidateMessages = <?=json_encode($validatorMessages)?>;
+        /*额外的规则*/
+        jqValidateRules['otherRules'] = {};
+        /*额外的信息*/
+        jqValidateMessages['otherRules'] = {};
+    </script>
+</form>
+<script>
+    helper.validate(formId, jqValidateRules, jqValidateMessages, function (form) {
+        try {
+            helper.submitByAjax(form, function (json) {
+                helper.confirm(json.message, '继续添加', '关闭', function (isConfirm) {
+                    if (!isConfirm) {
+                        var dialogId = $(form).parent().attr('id');
+                        $("#" + dialogId).dialog('close');
+                    }
+                });
+                /*表格重载*/
+                dataGridHelper.gridSelectorAll['grid-table'].trigger("reloadGrid");
+            }, function (json) {
+                if (json.message) {
+                    helper.alertError(json.message, 500);
+                }
+                if (json.errInput) {
+                    helper.formShowError(json.errInput, form);
+                }
+            });
+        } catch (error) {
+            console.log("处理提交有错误发生");
+            console.log(error);
+            return false;
+        }
+        return false;
+    });
+</script>

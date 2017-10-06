@@ -10,18 +10,20 @@ namespace Common\Event;
 
 
 use Common\Core\BaseInjectable;
+use Common\Exception\LogicException;
 use Phalcon\Events\Event;
 use Phalcon\Mvc\Dispatcher;
 use Phalcon\Mvc\Model;
 
 class DispatchEvent extends BaseInjectable
 {
-
-
     public function beforeDispatchLoop(Event $event, Dispatcher $dispatcher)
     {
         $di = $this->getDI();
         $controllerName = $dispatcher->getControllerClass();
+        if (!class_exists($controllerName)) {
+            throw new LogicException('请求地址不存在' . $controllerName);
+        }
         $actionName = $dispatcher->getActiveMethod();
         if (!method_exists($controllerName, $actionName)) {
             return;
@@ -54,17 +56,17 @@ class DispatchEvent extends BaseInjectable
                     }
                     continue;
                 }
+                /*看看是不是默认的几个基本服务*/
                 $classNames = explode('\\', $className);
                 $defaultService = strtolower(end($classNames));
-                /*看看是不是默认的几个基本服务*/
                 if ($di->has($defaultService)) {
                     $params[] = $di->getShared($defaultService);
                     continue;
                 }
                 $params[] = $di->getShared($className, [$dispatcher->getParam($k)]);
             } else {
-                $defaultValue=$parameter->isDefaultValueAvailable()?$parameter->getDefaultValue():null;
-                $params[] = $dispatcher->getParam($k,null,$defaultValue);
+                $defaultValue = $parameter->isDefaultValueAvailable() ? $parameter->getDefaultValue() : null;
+                $params[] = $dispatcher->getParam($k, null, $defaultValue);
             }
         }
         $dispatcher->setParams($params);
